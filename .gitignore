@@ -40,3 +40,6 @@ results/*
 # Scratch / logs
 *.log
 text_files/
+
+# Claude Code session guidance — local only, not part of the published repo
+CLAUDE.md

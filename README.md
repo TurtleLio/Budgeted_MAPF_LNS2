@@ -26,8 +26,7 @@ Benchmarks: the standard Sturtevant `random-32-32-10`, `room-32-32-4` and
 ├── logs_for_heuristics/             # Pre-computed all-pairs heuristics (h_dict_of_<map>.json)
 ├── results/                         # Output JSON (sample: combined_results.json)
 ├── requirements.txt
-├── LICENSE
-└── CLAUDE.md                        # Guidance for Claude Code sessions
+└── LICENSE
 ```
 
 ## Installation
