@@ -1,0 +1,42 @@
+# Byte-compiled / optimized
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# IDEs / editors
+.idea/
+.vscode/
+.claude/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Profiler output (from @use_profiler in functions_general.py)
+stats/
+*.pstat
+*.prof
+
+# Experiment outputs — keep the bundled sample, ignore everything else
+results/*
+!results/combined_results.json
+
+# Scratch / logs
+*.log
+text_files/
