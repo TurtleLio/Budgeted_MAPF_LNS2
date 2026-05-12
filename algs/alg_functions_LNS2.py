@@ -8,59 +8,8 @@ from algs.alg_sipps_functions import init_si_table, update_si_table_soft
 from algs.alg_functions_PIE import *
 
 
-# -------------------------------------------------------------------------------------------------------------------- #
-# -------------------------------------------------------------------------------------------------------------------- #
-# -------------------------------------------------------------------------------------------------------------------- #
-# CLASSES
-# -------------------------------------------------------------------------------------------------------------------- #
-# -------------------------------------------------------------------------------------------------------------------- #
-# -------------------------------------------------------------------------------------------------------------------- #
-# class AgentLNS2:
-#     def __init__(self, num: int, start_node: Node, goal_node: Node):
-#         self.num = num
-#         self.name = f'agent_{num}'
-#         self.start_node: Node = start_node
-#         self.start_node_name: str = self.start_node.xy_name
-#         self.curr_node: Node = start_node
-#         self.curr_node_name: str = self.curr_node.xy_name
-#         self.goal_node: Node = goal_node
-#         self.goal_node_name: str = self.goal_node.xy_name
-#         self.path: List[Node] | None = []
-#         self.k_path: List[Node] | None = None
-#
-#     @property
-#     def path_names(self):
-#         return [n.xy_name for n in self.path]
-#
-#     def update_curr_node(self, i_time):
-#         if i_time >= len(self.path):
-#             self.curr_node = self.path[-1]
-#             return
-#         self.curr_node = self.path[i_time]
-#
-#     def __lt__(self, other):
-#         return self.num < other.num
-#
-#     def __hash__(self):
-#         return hash(self.num)
-#
-#     def __eq__(self, other):
-#         return self.num == other.num
-#
-#     def __str__(self):
-#         return self.name
-#
-#     def __repr__(self):
-#         return self.name
 
 
-# -------------------------------------------------------------------------------------------------------------------- #
-# -------------------------------------------------------------------------------------------------------------------- #
-# -------------------------------------------------------------------------------------------------------------------- #
-# FUNCS
-# -------------------------------------------------------------------------------------------------------------------- #
-# -------------------------------------------------------------------------------------------------------------------- #
-# -------------------------------------------------------------------------------------------------------------------- #
 def create_lns_agents(
         start_nodes: List[Node], goal_nodes: List[Node]
 ) -> Tuple[List[AgentAlg], Dict[str, AgentAlg]]:
@@ -106,8 +55,6 @@ def create_init_solution(
     c_sum: int = 0
     h_priority_agents: List[AgentAlg] = []
     longest_len = 1
-    # vc_soft_np, ec_soft_np, pc_soft_np = init_constraints(map_dim, longest_len)
-    # vc_hard_np, ec_hard_np, pc_hard_np = init_constraints(map_dim, longest_len)
     ec_hard_np = init_ec_table(map_dim, longest_len)
     ec_soft_np = init_ec_table(map_dim, longest_len)
     si_table: Dict[str, List[Tuple[int, int, str]]] = init_si_table(nodes)
@@ -130,21 +77,16 @@ def create_init_solution(
         si_table = update_si_table_soft(new_path, si_table)
         if longest_len < len(new_path):
             longest_len = len(new_path)
-            # vc_hard_np, ec_hard_np, pc_hard_np = init_constraints(map_dim, longest_len)
-            # vc_soft_np, ec_soft_np, pc_soft_np = init_constraints(map_dim, longest_len)
             ec_hard_np = init_ec_table(map_dim, longest_len)
             ec_soft_np = init_ec_table(map_dim, longest_len)
             for h_agent in h_priority_agents:
-                # update_constraints(h_agent.path, vc_soft_np, ec_soft_np, pc_soft_np)
                 update_ec_table(h_agent.path, ec_soft_np)
         else:
-            # update_constraints(new_path, vc_soft_np, ec_soft_np, pc_soft_np)
             update_ec_table(new_path, ec_soft_np)
 
-        # checks
         runtime = time.time() - start_time
         print(f'\r[{alg_name} - init] | agents: {len(h_priority_agents): <3} / {len(agents)} | {runtime= : .2f} s.',
-              end='')  # , end=''
+              end='')
 
 
 def solve_subset_with_prp(
@@ -155,7 +97,6 @@ def solve_subset_with_prp(
         h_dict: Dict[str, np.ndarray],
         map_dim: Tuple[int, int],
         start_time: int | float,
-        # constr_type: str = 'hard',
         constr_type: str = 'soft',
         agents: List[AgentAlg] | None = None
 ) -> None:
@@ -164,12 +105,9 @@ def solve_subset_with_prp(
 
     si_table: Dict[str, List[Tuple[int, int, str]]] = init_si_table(nodes)
     longest_len = max([len(a.path) for a in agents])
-    # vc_soft_np, ec_soft_np, pc_soft_np = init_constraints(map_dim, longest_len)
-    # vc_hard_np, ec_hard_np, pc_hard_np = init_constraints(map_dim, longest_len)
     ec_hard_np = init_ec_table(map_dim, longest_len)
     ec_soft_np = init_ec_table(map_dim, longest_len)
     for h_agent in h_priority_agents:
-        # update_constraints(h_agent.path, vc_soft_np, ec_soft_np, pc_soft_np)
         update_ec_table(h_agent.path, ec_soft_np)
         si_table = update_si_table_soft(h_agent.path, si_table)
 
@@ -191,33 +129,13 @@ def solve_subset_with_prp(
 
         si_table = update_si_table_soft(new_path, si_table)
 
-        # if longest_len < len(new_path):
-        #     longest_len = len(new_path)
-        #     # vc_hard_np, ec_hard_np, pc_hard_np = init_constraints(map_dim, longest_len)
-        #     # vc_soft_np, ec_soft_np, pc_soft_np = init_constraints(map_dim, longest_len)
-        #     ec_hard_np = init_ec_table(map_dim, longest_len)
-        #     ec_soft_np = init_ec_table(map_dim, longest_len)
-        #     for h_agent in h_priority_agents:
-        #         # update_constraints(h_agent.path, vc_soft_np, ec_soft_np, pc_soft_np)
-        #         update_ec_table(h_agent.path, ec_soft_np)
-        # else:
-        #     # update_constraints(new_path, vc_soft_np, ec_soft_np, pc_soft_np)
-        #     update_ec_table(new_path, ec_soft_np)
         update_ec_table(new_path, ec_soft_np)
 
-        # checks
         runtime = time.time() - start_time
         assert len(agents_subset) + len(outer_agents) == len(agents)
         print(
             f'\r[nei calc] | agents: {len(h_priority_agents): <3} / {len(agents_subset) + len(outer_agents)} | {runtime= : .2f} s.',
-            end='')  # , end=''
-        # collisions: int = 0
-        # align_all_paths(h_priority_agents)
-        # for i in range(len(h_priority_agents[0].path)):
-        #     to_count = False if constr_type == 'hard' else True
-        #     collisions += check_vc_ec_neic_iter(h_priority_agents, i, to_count)
-        # if c_sum > 0:
-        #     print(f'{c_sum=}')
+            end='')
 
 
 def get_cp_graph(
@@ -227,7 +145,6 @@ def get_cp_graph(
 ) -> Tuple[Dict[str, List[AgentAlg]], Dict[str, List[str]]]:
     if other_agents is None:
         other_agents = []
-    # align_all_paths(agents)
     cp_graph: Dict[str, List[AgentAlg]] = {}
     for a1, a2 in combinations(agents, 2):
         if two_equal_paths_have_confs(a1.path, a2.path):
@@ -293,7 +210,6 @@ def get_agents_subset(
     agents_with_cp: List[AgentAlg] = [a for a in agents if a.name in cp_graph]
     curr_agent: AgentAlg = random.choice(agents_with_cp)
 
-    # find largest connected component
     lcc: List[AgentAlg] = []
     l_open = deque([curr_agent])
     i = 0
@@ -315,18 +231,10 @@ def get_agents_subset(
             agents_s.append(outer_agent)
         return agents_s
     else:
-        # add until N agents
         agents_s = get_agent_s_from_random_walk(curr_agent, cp_graph, n_neighbourhood)
         return agents_s
 
 
-# -------------------------------------------------------------------------------------------------------------------- #
-# -------------------------------------------------------------------------------------------------------------------- #
-# -------------------------------------------------------------------------------------------------------------------- #
-# K LIMITED Functions
-# -------------------------------------------------------------------------------------------------------------------- #
-# -------------------------------------------------------------------------------------------------------------------- #
-# -------------------------------------------------------------------------------------------------------------------- #
 def create_k_limit_init_solution(
         agents: List[AgentAlg],
         nodes: List[Node],
@@ -338,14 +246,12 @@ def create_k_limit_init_solution(
         k_limit: int,
         start_time: int | float,
         vc_empty_np, ec_empty_np, pc_empty_np,
-        resources,  # The class that contains the limit of the nodes
-        max_depth: int,  # Limit on the depth of the search
+        resources,
+        max_depth: int,
         params,
 ):
-    # max_time: bool = params['max_time']
     max_time: bool = params['max_iter_time']
     h_priority_agents: List[AgentAlg] = []
-    # si_table: Dict[str, List[Tuple[int, int, str]]] = init_si_table(nodes,k_limit+1)
     si_table: Dict[str, List[Tuple[int, int, str]]] = init_si_table(nodes)
     if pf_alg_name == 'sipps':
         vc_hard_np, ec_hard_np, pc_hard_np = vc_empty_np, ec_empty_np, pc_empty_np
@@ -357,8 +263,6 @@ def create_k_limit_init_solution(
         raise RuntimeError('nono')
 
     for agent in agents:
-        # if time.time() - start_time >= max_time:
-        #     return None, {'agents': agents}
         new_path, alg_info = pf_alg(
             agent.curr_node, agent.goal_node, nodes, nodes_dict, h_dict,
             vc_hard_np, ec_hard_np, pc_hard_np, vc_soft_np, ec_soft_np, pc_soft_np, resources,
@@ -387,10 +291,8 @@ def get_k_limit_cp_graph(
 ) -> Tuple[Dict[str, List[AgentAlg]], Dict[str, List[str]]]:
     if other_agents is None:
         other_agents = []
-    # align_all_paths(agents)
     cp_graph: Dict[str, List[AgentAlg]] = {}
     for a1, a2 in combinations(agents, 2):
-        # if exceeds_k_dist(a1.curr_node, a2.curr_node, k_limit + 1):
         if exceeds_k_dist(a1.curr_node, a2.curr_node, 2*(k_limit+1)):
             continue
         if two_equal_paths_have_confs(a1.k_path, a2.k_path):
@@ -408,7 +310,6 @@ def get_k_limit_cp_graph(
                 if nei not in agents:
                     cp_graph[other_a.name].append(nei)
         for a in agents:
-            # if exceeds_k_dist(other_a.curr_node, a.curr_node, k_limit + 1):
             if exceeds_k_dist(other_a.curr_node, a.curr_node, 2*(k_limit+1)):
                 continue
             if two_equal_paths_have_confs(other_a.k_path, a.k_path):
@@ -418,7 +319,6 @@ def get_k_limit_cp_graph(
                     cp_graph[a.name] = []
                 cp_graph[other_a.name].append(a)
                 cp_graph[a.name].append(other_a)
-    # return cp_graph, {}
     return {k: v for k, v in cp_graph.items() if v}, {}
 
 def get_k_limit_outer_agent_via_random_walk(
@@ -432,44 +332,6 @@ def get_k_limit_outer_agent_via_random_walk(
             return occupied_from[next_node.xy_name]
         next_node = random.choice(next_node.neighbours_nodes)
 
-# def get_k_limit_agents_subset(
-#         cp_graph: Dict[str, List[AgentAlg]],
-#         cp_graph_names: Dict[str, List[str]],
-#         n_neighbourhood: int,
-#         agents: List[AgentAlg],
-#         occupied_from: Dict[str, AgentAlg],
-#         h_dict: Dict[str, np.ndarray],
-# ) -> List[AgentAlg]:
-#     agents_with_cp: List[AgentAlg] = [a for a in agents if a.name in cp_graph]
-#     curr_agent: AgentAlg = random.choice(agents_with_cp)
-#
-#     # find largest connected component
-#     lcc: List[AgentAlg] = []
-#     l_open = deque([curr_agent])
-#     i = 0
-#     while len(l_open) > 0:
-#         i += 1
-#         next_a = l_open.pop()
-#         heapq.heappush(lcc, next_a)
-#         random.shuffle(cp_graph[next_a.name])
-#         for nei_a in cp_graph[next_a.name]:
-#             if nei_a not in lcc and nei_a not in l_open:
-#                 l_open.append(nei_a)
-#
-#     agents_s: List[AgentAlg] = []
-#     if len(lcc) <= n_neighbourhood:
-#         agents_s.extend(lcc)
-#         while len(agents_s) < n_neighbourhood:
-#             rand_agent = random.choice(agents_s)
-#             outer_agent = get_k_limit_outer_agent_via_random_walk(rand_agent, agents_s, occupied_from)
-#             agents_s.append(outer_agent)
-#         # print(f'\nstrangers, [{agents_s}]')
-#         return agents_s
-#     else:
-#         # add until N agents
-#         agents_s = get_agent_s_from_random_walk(curr_agent, cp_graph, n_neighbourhood)
-#         # print('from neigh')
-#         return agents_s
 
 def get_k_limit_agents_subset(
         cp_graph: Dict[str, List[AgentAlg]],
@@ -480,38 +342,23 @@ def get_k_limit_agents_subset(
         h_dict: Dict[str, np.ndarray],
         resources,
 ) -> List[AgentAlg]:
-    # Filter agents that have connectivity information.
     agents_with_cp: List[AgentAlg] = [a for a in agents if a.name in cp_graph]
 
-    # Further filter those with a positive resource proportion.
-    # agents_with_positive: List[AgentAlg] = [a for a in agents_with_cp if resources.proportions[a.num] > 0]
 
-    # Choose a starting agent from the positive group if available,
-    # otherwise fall back to any agent with connectivity.
-    # if agents_with_positive:
-    #     curr_agent: AgentAlg = random.choice(agents_with_positive)
-    # else:
-    #     curr_agent: AgentAlg = random.choice(agents_with_cp)
     curr_agent: AgentAlg = random.choice(agents_with_cp)
-    # Build the largest connected component (LCC) starting from curr_agent.
     lcc: List[AgentAlg] = []
     l_open = deque([curr_agent])
     while l_open:
         next_a = l_open.pop()
-        # Use heapq to push into lcc (maintaining order, though order isn’t critical here)
         heapq.heappush(lcc, next_a)
         random.shuffle(cp_graph[next_a.name])
         for nei_a in cp_graph[next_a.name]:
             if nei_a not in lcc and nei_a not in l_open:
                 l_open.append(nei_a)
 
-    # Partition the connected component into agents with positive and zero (or non-positive) resource values.
-    # lcc_positive = [agent for agent in lcc if resources.proportions[agent.num] > 0]
-    # lcc_zero = [agent for agent in lcc if resources.proportions[agent.num] <= 0]
 
     agents_s: List[AgentAlg] = []
 
-    # If the connected component is smaller than needed, use a fallback to add more agents.
     if len(lcc) < n_neighbourhood:
         agents_s.extend(lcc)
         while len(agents_s) < n_neighbourhood:
@@ -521,24 +368,6 @@ def get_k_limit_agents_subset(
         return agents_s
     else:
         agents_s = lcc[:n_neighbourhood]
-        # # If there are enough agents in the connected component:
-        # # First try to select all agents from the positive group.
-        # if len(lcc_positive) >= n_neighbourhood:
-        #     agents_s = random.sample(lcc_positive, n_neighbourhood)
-        # else:
-        #     # Not enough positive agents; take all the positive ones.
-        #     agents_s = lcc_positive.copy()
-        #     remaining = n_neighbourhood - len(agents_s)
-        #     # Then fill in with agents that have zero (or non-positive) resource values.
-        #     if len(lcc_zero) >= remaining:
-        #         agents_s.extend(random.sample(lcc_zero, remaining))
-        #     else:
-        #         # If even the zero group is insufficient, add all of them and then use random walk to fill in.
-        #         agents_s.extend(lcc_zero)
-        #         while len(agents_s) < n_neighbourhood:
-        #             rand_agent = random.choice(agents_s)
-        #             outer_agent = get_k_limit_outer_agent_via_random_walk(rand_agent, agents_s, occupied_from)
-        #             agents_s.append(outer_agent)
         return agents_s
 
 def get_k_limit_agents_subset_tests_only(
@@ -558,50 +387,6 @@ def get_k_limit_agents_subset_tests_only(
 
     return agents_sorted[start:end]
 
-# def get_k_limit_agents_subset(
-#         cp_graph: Dict[str, List[AgentAlg]],
-#         cp_graph_names: Dict[str, List[str]],
-#         n_neighbourhood: int,
-#         agents: List[AgentAlg],
-#         occupied_from: Dict[str, AgentAlg],
-#         h_dict: Dict[str, np.ndarray],
-#         resources,
-# ) -> List[AgentAlg]:
-#     # Filter agents that have connectivity information (are in conflicts)
-#     agents_with_cp: List[AgentAlg] = [a for a in agents if a.name in cp_graph]
-#
-#     if not agents_with_cp:
-#         # No agents in conflict graph, fallback to random selection
-#         return random.sample(agents, min(n_neighbourhood, len(agents)))
-#
-#     # Further filter those with a positive resource proportion
-#     agents_with_positive: List[AgentAlg] = [a for a in agents_with_cp if resources.proportions[a.num] > 0]
-#
-#     # Choose a starting agent from the positive group if available,
-#     # otherwise fall back to any agent with connectivity
-#     if agents_with_positive:
-#         curr_agent: AgentAlg = random.choice(agents_with_positive)
-#     else:
-#         curr_agent: AgentAlg = random.choice(agents_with_cp)
-#
-#     # Initialize the subset with the starting agent
-#     agents_s: List[AgentAlg] = [curr_agent]
-#
-#     # Use random walk to fill the rest of the neighborhood
-#     while len(agents_s) < n_neighbourhood:
-#         # Pick a random agent from current subset as starting point for random walk
-#         rand_agent = random.choice(agents_s)
-#         outer_agent = get_k_limit_outer_agent_via_random_walk(rand_agent, agents_s, occupied_from)
-#
-#         # Add the new agent if we found one
-#         if outer_agent not in agents_s:  # Safety check to avoid duplicates
-#             agents_s.append(outer_agent)
-#         else:
-#             # If random walk returned an agent already in the subset,
-#             # we might be stuck, so break or handle accordingly
-#             break
-#
-#     return agents_s
 
 def solve_k_limit_subset_with_prp(
         agents_subset: List[AgentAlg],
@@ -654,26 +439,13 @@ def solve_k_limit_subset_with_prp(
         resources.max_nodes[-1] -= neib_budget
     else:
         resources.neib_pool(agents_subset, cp_graph = cp_graph,prefix = k_limit, pid = pid)
-    #----------------------- ADDED FOR PRINTS
-    # sum_conflicts = sum(resources.proportions)
-    # neib_conflicts = 0
-    # for agent in agents_subset:
-    #     neib_conflicts += resources.proportions[agent.num]
-    # print(f'replan for agents: {resources.agent_subset}')
-    # print(f'neib conflicts: {neib_conflicts/sum_conflicts}')
-    # print(f'neib_budget: {resources.neib_budget}')
-    #----------------------------------------
     resources.agent_distribution()
-    #print(f'agent resources: {resources.max_nodes}')
     for agent in agents_subset:
         new_path, sipps_info = pf_alg(
             agent.curr_node, agent.goal_node, nodes, nodes_dict, h_dict,
             vc_hard_np, ec_hard_np, pc_hard_np, vc_soft_np, ec_soft_np, pc_soft_np, resources, max_depth_search,
             flag_k_limit=True, k_limit=k_limit, agent=agent, si_table=si_table, is_neighborhood=True,
         )
-        # if new_path is None:
-        #     success = False
-        #     new_path = [agent.curr_node]
         if is_wait_path(new_path):
             success = False
         new_path = align_path(new_path, k_limit + 1)
@@ -690,12 +462,6 @@ def solve_k_limit_subset_with_prp(
             raise RuntimeError('nono')
     resources_before_return = resources.max_nodes[-1].copy()
     resources_returned = resources.return_resources()
-    #--------------- ADDED FOR PRINTS
-    # # print(f'resources before search: {resources_before_search}')
-    # print(f'used resources: {resources_before_search - resources.max_nodes[-1]}')
-    # for agent in agents_subset:
-    #     print(f'Agent {agent.num} new path:{agent.k_path}')
-    #-----------------------------------------
     if 'Multi' in distribution_name:
         remaining_resources_in_neib = resources_returned
         resources.weights[heuristic]['expansions'] += neib_budget - remaining_resources_in_neib
@@ -703,25 +469,9 @@ def solve_k_limit_subset_with_prp(
             resources.weights[heuristic]['successes'] += 1
         update_weights_multi_arm(heuristic,success,resources.weights)
 
-        # checks
-        # runtime = time.time() - start_time
-        # assert len(agents_subset) + len(outer_agents) == len(agents)
-        # print(f'\r[LNS neigh calc] | agents: {len(h_priority_agents): <3} / {len(agents_subset) + len(outer_agents)} | {runtime=: .2f} s.',end='')  # , end=''
-        # collisions: int = 0
-        # align_all_paths(h_priority_agents)
-        # for i in range(len(h_priority_agents[0].path)):sque
-        #     to_count = False if constr_type == 'hard' else True
-        #     collisions += check_vc_ec_neic_iter(h_priority_agents, i, to_count)
-        # if c_sum > 0:
-        #     print(f'{c_sum=}')
 
 def has_resources_in_cp_graph(cp_graph: Dict[str, List[AgentAlg]], resources,
                               agents: List[AgentAlg]) -> bool:
-    # for agent_name in cp_graph.keys():
-    #     idx = int(agent_name.split('_')[1])
-    #
-    #     if idx < len(resources.proportions) and resources.proportions[idx] > 0 and resources.max_nodes[-1] > 0:
-    #         return True
     if resources.max_nodes[-1] > 0:
         return True
     return False
@@ -736,40 +486,14 @@ def calculate_delay(curr_node, goal_node, h_dict):
 
 
 def normalize_agent_distances(agent_distances: dict):
-    # Step 1: Find the maximum raw distance
     max_raw = max(agent['raw'] for agent in agent_distances.values())
-    # Step 2: Normalize each agent's distance
     if max_raw == 0:
-        # Avoid division by zero
         for agent in agent_distances.values():
             agent['normalized'] = 0.0
     else:
         for agent in agent_distances.values():
             agent['normalized'] = agent['raw'] / max_raw
-# def create_hard_and_soft_constraints(h_priority_agents: List[AgentAlg], map_dim: Tuple[int, int], constr_type: str):
-#     assert constr_type in ['hard', 'soft']
-#     if len(h_priority_agents) == 0:
-#         max_path_len = 1
-#         vc_hard_np, ec_hard_np, pc_hard_np = init_constraints(map_dim, max_path_len)
-#         vc_soft_np, ec_soft_np, pc_soft_np = init_constraints(map_dim, max_path_len)
-#         # vc_hard_np, ec_hard_np, pc_hard_np = None, None, None
-#         # vc_soft_np, ec_soft_np, pc_soft_np = None, None, None
-#         return vc_hard_np, ec_hard_np, pc_hard_np, vc_soft_np, ec_soft_np, pc_soft_np
-#     max_path_len = max([len(a.path) for a in h_priority_agents])
-#     paths = [a.path for a in h_priority_agents]
-#     if constr_type == 'hard':
-#         vc_hard_np, ec_hard_np, pc_hard_np = create_constraints(paths, map_dim, max_path_len)
-#         vc_soft_np, ec_soft_np, pc_soft_np = init_constraints(map_dim, max_path_len)
-#         # vc_soft_np, ec_soft_np, pc_soft_np = None, None, None
-#     elif constr_type == 'soft':
-#         vc_hard_np, ec_hard_np, pc_hard_np = init_constraints(map_dim, max_path_len)
-#         # vc_hard_np, ec_hard_np, pc_hard_np = None, None, None
-#         vc_soft_np, ec_soft_np, pc_soft_np = create_constraints(paths, map_dim, max_path_len)
-#     else:
-#         raise RuntimeError('nope')
-#     return vc_hard_np, ec_hard_np, pc_hard_np, vc_soft_np, ec_soft_np, pc_soft_np
 
-#-------------------LNS1--------------
 def solve_subset_with_prp_LNS1(
         agents_subset: List[AgentAlg],
         outer_agents: List[AgentAlg],
@@ -814,16 +538,12 @@ def solve_subset_with_prp_LNS1(
         agent.temp_path = new_path
         k_path_all = agent.path+agent.temp_path[1:]
         update_constraints_tracked(k_path_all[step_iter:step_iter+k_limit+1], vc_hard_np, ec_hard_np, pc_hard_np, agent, step_iter)
-        # update_constraints_tracked(k_path_all[:k_limit + 1], vc_hard_np, ec_hard_np, pc_hard_np, agent,0)
         h_priority_agents.append(agent)
 
     if not planning_successful:
         remove_agents_constraints_fast(agents_subset, vc_hard_np, ec_hard_np, pc_hard_np,0)
         for agent in agents_subset:
-            #agent.path = agent.path[:step_iter]+agent.k_path
             update_constraints_tracked(agent.path + agent.k_path[1:], vc_hard_np, ec_hard_np, pc_hard_np, agent)
-            # update_constraints_tracked(agent.k_path[0:k_limit+1], vc_hard_np, ec_hard_np,
-            #                            pc_hard_np, agent, step_iter)
         tabu_list.append(agents_subset[0])
         return  planning_successful
     runtime = time.time() - start_time
@@ -857,7 +577,6 @@ def solve_subset_with_prp_LNS1_PIBT_LNS2(
     remove_agents_constraints_fast(agents_subset, vc_hard_np, ec_hard_np, pc_hard_np,step_iter)
     resources.agent_subset = agents_subset
     resources.neib_pool(agents_subset,prefix = k_limit, pid = [1.5,1.75,1])
-    # resources.neib_pool(agents_subset, prefix=k_limit, pid=[1, 1, 1])
     resources.agent_distribution()
     planning_successful = True
 
@@ -874,16 +593,12 @@ def solve_subset_with_prp_LNS1_PIBT_LNS2(
         agent.temp_path = new_path
         k_path_all = agent.path+agent.temp_path[1:]
         update_constraints_tracked(k_path_all[:k_limit+1], vc_hard_np, ec_hard_np, pc_hard_np, agent, step_iter)
-        # update_constraints_tracked(k_path_all[:k_limit + 1], vc_hard_np, ec_hard_np, pc_hard_np, agent,0)
         h_priority_agents.append(agent)
 
     if not planning_successful:
         remove_agents_constraints_fast(agents_subset, vc_hard_np, ec_hard_np, pc_hard_np,0)
         for agent in agents_subset:
-            #agent.path = agent.path[:step_iter]+agent.k_path
             update_constraints_tracked(agent.path + agent.k_path[1:], vc_hard_np, ec_hard_np, pc_hard_np, agent)
-            # update_constraints_tracked(agent.k_path[0:k_limit+1], vc_hard_np, ec_hard_np,
-            #                            pc_hard_np, agent, step_iter)
         tabu_list.append(agents_subset[0])
         return  planning_successful
     runtime = time.time() - start_time
@@ -892,62 +607,37 @@ def solve_subset_with_prp_LNS1_PIBT_LNS2(
 def update_paths_if_total_shorter_LNS1(agents, vc_hard_np, ec_hard_np, pc_hard_np, step_iter, tabu_list,k_limit,h_dict):
     failed_agents = [agent for agent in agents if len(agent.temp_path) == 0]
     if len(failed_agents) > 0:
-        #print(f"❌ REJECTING k_paths: {len(failed_agents)} agents failed to find paths")
         remove_agents_constraints_fast(agents, vc_hard_np, ec_hard_np, pc_hard_np,step_iter)
         for agent in agents:
-            #extend_agent_temp_path_to_length(agent,step_iter)
-            #agent.path = agent.path[:step_iter] + agent.temp_path
             update_constraints_tracked(agent.path+agent.k_path[1:k_limit+1], vc_hard_np, ec_hard_np, pc_hard_np, agent)
         tabu_list.append(agents[0])
         return 0, tabu_list
     total_path_len = 0
     total_k_path_len = 0
-    #--------------------------------------------------------
     k_len_arr=[]
     temp_len_arr=[]
     for agent in agents:
-        #temp_len = agent.current_path_length
         if len(agent.temp_path) >= len(agent.k_path):
             temp_len = compute_distance(agent.temp_path[len(agent.k_path)-1], agent.goal_node,h_dict)
         else:
             temp_len = compute_distance(agent.temp_path[-1], agent.goal_node, h_dict)
         k_len = compute_distance(agent.k_path[-1], agent.goal_node,h_dict)
-        # total_path_len += temp_len
-        # total_k_path_len += k_len
         k_len_arr.append(k_len)
         temp_len_arr.append(temp_len)
-    #----------------------------------------------------------
-    # total_path_len = max(temp_len_arr)
-    # total_k_path_len = max(k_len_arr)
     total_path_len = max(temp_len_arr)
     total_k_path_len = max(k_len_arr)
     if total_path_len == 0 and total_k_path_len == 0:
         total_path_len, total_k_path_len = calculate_arrival_time(agents)
     if total_k_path_len > total_path_len:
-        # print(f'agent numbers: {[agents[0].num,agents[1].num,agents[2].num,agents[3].num,agents[4].num]}')
-        # print(f"✅ ACCEPTING temp_paths | old:{k_len_arr} | new: {temp_len_arr}")
         remove_agents_constraints_fast(agents, vc_hard_np, ec_hard_np, pc_hard_np,0)
         for agent in agents:
             agent.k_path =agent.temp_path[:k_limit+1]
-            #extend_agent_temp_path_to_length(agent, step_iter)
-            #agent.path = agent.path[:step_iter] + agent.temp_path
             update_constraints_tracked(agent.path+agent.k_path[1:k_limit+1], vc_hard_np, ec_hard_np, pc_hard_np, agent)
-            # if len(agent.k_path) > k_limit:
-            #     agent.current_path_length = compute_distance(agent.k_path[k_limit], agent.goal_node,h_dict)
-            # else:
-            #     agent.current_path_length = compute_distance(agent.k_path[k_limit-1], agent.goal_node,h_dict)
         return (total_path_len - total_k_path_len), tabu_list
     else:
-        #print("❌ REJECTING k_paths, keeping temp_paths")
         remove_agents_constraints_fast(agents, vc_hard_np, ec_hard_np, pc_hard_np,0)
         for agent in agents:
             update_constraints_tracked(agent.path + agent.k_path[1:k_limit+1], vc_hard_np, ec_hard_np, pc_hard_np, agent)
-            # if len(agent.temp_path) != 0:
-            #     #extend_agent_temp_path_to_length(agent, step_iter)
-            #     #agent.path = agent.path[:step_iter] + agent.temp_path
-            #     update_constraints_tracked(agent.path+agent.k_path[1:k_limit], vc_hard_np, ec_hard_np, pc_hard_np, agent)
-            # else:
-            #     update_constraints_tracked(agent.path, vc_hard_np, ec_hard_np, pc_hard_np, agent)
         tabu_list.append(agents[0])
         return 0, tabu_list
 
@@ -982,7 +672,6 @@ def calculate_arrival_time(agents):
         return 0,1
     else:
         return 1,0
-    # return max(k_path_arrival_time), max(temp_path_arrival_time)
 
 def calculate_arrival_time_single_agent(agent):
     k_counter = 0
@@ -993,7 +682,6 @@ def calculate_arrival_time_single_agent(agent):
 
 
 def select_heuristics(weights, rng):
-    # Extract just the values from the nested structure
     values = {h: w['value'] for h, w in weights.items()}
     total = sum(values.values())
     prob = {h: v / total for h, v in values.items()}
@@ -1006,13 +694,10 @@ def update_weights_multi_arm(heuristic, success, weights):
         weights[heuristic]['value'] = (learning_rate + 1) * weights[heuristic]['value']
     else:
         weights[heuristic]['value'] = (1 - learning_rate) * weights[heuristic]['value']
-    #print(f'heuristic:{heuristic}, success:{success}, weights:{weights}')
 
 def multi_arm_resources(resources, weights,heuristic_counter, rng):
-    #print(f'weights: {weights}')
     heuristic = select_heuristics(weights,rng)
     heuristic_counter[heuristic] += 1
-    # print(f'chosen heuristic: {heuristic}')
     if heuristic == 'Shared':
         arm_resources = resource_and_neib_distributions.create(fixed_distribution, neib_shared,
                                                            neib_agents_shared, 0, resources.num_agents)
@@ -1025,9 +710,6 @@ def multi_arm_resources(resources, weights,heuristic_counter, rng):
     if heuristic == 'PID':
         arm_resources = resource_and_neib_distributions.create(fixed_distribution, neib_pid,
                                                                neib_agents_shared, 0, resources.num_agents)
-    # arm_resources = resource_and_neib_distributions.create(shared_distribution, neib_proportions_with_prefix_reversed,
-    #                                                        neib_agents_shared, 0, resources.num_agents)
     arm_resources.max_nodes = resources.max_nodes.copy()
     arm_resources.agents_subset = resources.agent_subset
-    #print(f'agent subset{arm_resources.agents_subset} | sum max nodes:{sum(arm_resources.max_nodes)}')
     return arm_resources, heuristic

@@ -26,20 +26,16 @@ def validate_solution(agents) -> Dict:
         }
     }
 
-    # Check path coherence
     coherence_results = check_path_coherence(agents)
     results['path_coherence'] = coherence_results
 
-    # Check collisions
     collision_results = check_collisions(agents)
     results['collisions'] = collision_results
 
-    # Update summary
     results['summary']['agents_with_paths'] = len([a for a in agents if a.path])
     results['summary']['coherence_violations'] = len(coherence_results['issues'])
     results['summary']['collision_violations'] = len(collision_results['issues'])
 
-    # Overall validity
     results['is_valid'] = coherence_results['valid'] and collision_results['valid']
 
     return results
@@ -71,15 +67,12 @@ def check_path_coherence(agents) -> Dict:
 
         path = agent.path
 
-        # Check each step in the path
         for i in range(1, len(path)):
             prev_node = path[i - 1]
             curr_node = path[i]
 
-            # Calculate Manhattan distance between consecutive nodes
             distance = abs(curr_node.x - prev_node.x) + abs(curr_node.y - prev_node.y)
 
-            # Valid moves: stay in place (distance 0) or move to adjacent cell (distance 1)
             if distance > 1:
                 results['issues'].append({
                     'agent': agent.num,
@@ -91,9 +84,7 @@ def check_path_coherence(agents) -> Dict:
                     'description': f"Agent {agent.num} jumped from {prev_node.xy_name} to {curr_node.xy_name} (distance {distance})"
                 })
 
-            # Additional check: ensure the move is to a valid neighbor or staying in place
             if distance == 1:
-                # Check if it's a valid adjacent move (not diagonal)
                 dx = abs(curr_node.x - prev_node.x)
                 dy = abs(curr_node.y - prev_node.y)
 
@@ -128,19 +119,15 @@ def check_collisions(agents) -> Dict:
         'issues': []
     }
 
-    # Get the maximum path length to ensure we check all time steps
     max_time = 0
     for agent in agents:
         if agent.path:
             max_time = max(max_time, len(agent.path))
 
-    # Check for collisions at each time step
     for t in range(max_time):
-        # Check vertex collisions (multiple agents at same position)
         vertex_collisions = check_vertex_collisions_at_time(agents, t)
         results['issues'].extend(vertex_collisions)
 
-        # Check edge collisions (agents swapping positions)
         if t > 0:
             edge_collisions = check_edge_collisions_at_time(agents, t)
             results['issues'].extend(edge_collisions)
@@ -165,14 +152,12 @@ def check_vertex_collisions_at_time(agents, time_step) -> List[Dict]:
     issues = []
     position_to_agents = defaultdict(list)
 
-    # Group agents by their position at this time step
     for agent in agents:
         if agent.path and time_step < len(agent.path):
             node = agent.path[time_step]
             position = (node.x, node.y)
             position_to_agents[position].append(agent)
 
-    # Find positions with multiple agents
     for position, agents_at_position in position_to_agents.items():
         if len(agents_at_position) > 1:
             agent_nums = [agent.num for agent in agents_at_position]
@@ -200,7 +185,6 @@ def check_edge_collisions_at_time(agents, time_step) -> List[Dict]:
     """
     issues = []
 
-    # Get all agent positions at time_step-1 and time_step
     agent_moves = []
     for agent in agents:
         if (agent.path and
@@ -214,13 +198,11 @@ def check_edge_collisions_at_time(agents, time_step) -> List[Dict]:
                 'to': curr_pos
             })
 
-    # Check for swapping (edge collisions)
     for i, move1 in enumerate(agent_moves):
         for move2 in agent_moves[i + 1:]:
-            # Check if two agents are swapping positions
             if (move1['from'] == move2['to'] and
                     move1['to'] == move2['from'] and
-                    move1['from'] != move1['to']):  # Exclude staying in place
+                    move1['from'] != move1['to']):
 
                 issues.append({
                     'type': 'edge_collision',
@@ -252,23 +234,21 @@ def print_validation_report(validation_results):
     print(f"Solution is valid: {'✓ YES' if validation_results['is_valid'] else '✗ NO'}")
     print()
 
-    # Path coherence report
     coherence = validation_results['path_coherence']
     print(f"PATH COHERENCE: {'✓ VALID' if coherence['valid'] else '✗ INVALID'}")
     if coherence['issues']:
         print(f"  Found {len(coherence['issues'])} coherence violations:")
-        for issue in coherence['issues'][:5]:  # Show first 5
+        for issue in coherence['issues'][:5]:
             print(f"    - {issue['description']}")
         if len(coherence['issues']) > 5:
             print(f"    ... and {len(coherence['issues']) - 5} more")
     print()
 
-    # Collision report
     collisions = validation_results['collisions']
     print(f"COLLISIONS: {'✓ NO COLLISIONS' if collisions['valid'] else '✗ COLLISIONS FOUND'}")
     if collisions['issues']:
         print(f"  Found {len(collisions['issues'])} collision violations:")
-        for issue in collisions['issues'][:5]:  # Show first 5
+        for issue in collisions['issues'][:5]:
             print(f"    - {issue['description']}")
         if len(collisions['issues']) > 5:
             print(f"    ... and {len(collisions['issues']) - 5} more")
@@ -308,7 +288,6 @@ def validate_graph_connections(nodes, nodes_dict):
 
             neighbor = nodes_dict[neighbor_name]
 
-            # Check if it's a self-connection
             if neighbor_name == node.xy_name:
                 results['self_connections'].append({
                     'node': node.xy_name,
@@ -316,7 +295,6 @@ def validate_graph_connections(nodes, nodes_dict):
                 })
                 continue
 
-            # Calculate distance
             distance = abs(neighbor.x - node.x) + abs(neighbor.y - node.y)
 
             if distance > 1:
@@ -329,7 +307,6 @@ def validate_graph_connections(nodes, nodes_dict):
                 results['valid'] = False
 
             elif distance == 1:
-                # Check for diagonal connections
                 dx = abs(neighbor.x - node.x)
                 dy = abs(neighbor.y - node.y)
                 if not ((dx == 1 and dy == 0) or (dx == 0 and dy == 1)):
@@ -340,7 +317,6 @@ def validate_graph_connections(nodes, nodes_dict):
                     })
                     results['valid'] = False
 
-    # Create summary
     results['summary'] = {
         'total_nodes': len(nodes),
         'invalid_connections': len(results['invalid_connections']),
@@ -359,15 +335,14 @@ def validate_constraint_arrays(vc_np, ec_np, pc_np):
     print(f"EC non-zero entries: {np.count_nonzero(ec_np)}")
     print(f"PC non-minus-one entries: {np.count_nonzero(pc_np != -1)}")
 
-    # Check for unreasonable values
     max_agent_id = np.max(vc_np)
     print(f"Max agent ID in VC: {max_agent_id}")
 
-    if max_agent_id > 200:  # Adjust based on your agent count
+    if max_agent_id > 200:
         print("❌ WARNING: Suspiciously high agent IDs in constraints")
 
 
-def debug_path_reconstruction(agent, step_iter):  # First 3 agents
+def debug_path_reconstruction(agent, step_iter):
     if len(agent.path) > step_iter:
         current_pos = agent.path[step_iter]
         temp_start = agent.temp_path[0] if agent.temp_path else None
@@ -382,28 +357,7 @@ def debug_path_reconstruction(agent, step_iter):  # First 3 agents
             print(f"  ❌ MISMATCH! Agent will jump from {current_pos.xy_name} to {temp_start.xy_name}")
 
 
-# def validate_temp_paths_only(agents, vc_hard_np, ec_hard_np, pc_hard_np):
-#     """Validate just the temp_paths of subset agents"""
-#
-#     # Create temporary constraint arrays with ONLY temp_paths
-#     temp_vc = np.zeros_like(vc_hard_np)
-#     temp_ec = np.zeros_like(ec_hard_np)
-#     temp_pc = np.full_like(pc_hard_np, -1)
-#
-#     # Add ALL agents' temp_paths to see if they conflict
-#     for agent in agents:  # ALL agents, not just subset
-#         update_constraints(agent.temp_path, temp_vc, temp_ec, temp_pc, agent.num)
-#
-#     # Validate this temp solution
-#     validation = validate_solution(agents)  # Using temp_paths
-#     print(f"temp_paths validation: {validation['is_valid']}")
-#
-#     if not validation['is_valid']:
-#         print("❌ temp_paths themselves have conflicts!")
-#         for issue in validation['collisions']['issues'][:5]:
-#             print(f"  {issue['description']}")
 
-# Add this right before reverting to temp_paths
 def validate_constraints_consistency(agents: List[AgentAlg], vc_np: np.ndarray,
                                      ec_np: np.ndarray, pc_np: np.ndarray, step_name: str = ""):
     """
@@ -411,7 +365,6 @@ def validate_constraints_consistency(agents: List[AgentAlg], vc_np: np.ndarray,
     """
     print(f"🔍 Validating constraints at step: {step_name}")
 
-    # Check vertex constraints
     for agent in agents:
         if hasattr(agent, 'path') and agent.path:
             for t, node in enumerate(agent.path):
@@ -422,12 +375,10 @@ def validate_constraints_consistency(agents: List[AgentAlg], vc_np: np.ndarray,
                               f"but constraint shows agent {constraint_value}")
                         return False
 
-    # Check for vertex conflicts between agents
     for t in range(vc_np.shape[2]):
         for x in range(vc_np.shape[0]):
             for y in range(vc_np.shape[1]):
                 if vc_np[x, y, t] != 0:
-                    # Find all agents at this position and time
                     agents_here = []
                     for agent in agents:
                         if (hasattr(agent, 'path') and agent.path and
@@ -450,16 +401,14 @@ def debug_constraint_state(agents: List[AgentAlg], vc_np: np.ndarray,
     """
     print(f"\n📊 Constraint State at {step_name}:")
 
-    # Count constraints
     vc_count = np.count_nonzero(vc_np)
     ec_count = np.count_nonzero(ec_np)
-    pc_count = np.count_nonzero(pc_np + 1)  # +1 because -1 means no constraint
+    pc_count = np.count_nonzero(pc_np + 1)
 
     print(f"  Vertex constraints: {vc_count}")
     print(f"  Edge constraints: {ec_count}")
     print(f"  Permanent constraints: {pc_count}")
 
-    # Show which agents have tracking info
     tracked_agents = []
     for agent in agents:
         if (hasattr(agent, 'my_vertex_constraints') and
@@ -468,7 +417,6 @@ def debug_constraint_state(agents: List[AgentAlg], vc_np: np.ndarray,
 
     print(f"  Agents with tracking info: {tracked_agents}")
 
-    # Check for orphaned constraints (constraints not tracked by any agent)
     all_tracked_positions = set()
     for agent in agents:
         if hasattr(agent, 'my_vertex_constraints'):
@@ -501,7 +449,6 @@ def debug_agent_68_paths(agent, stage, step_iter=None, new_path=None):
     if step_iter is not None:
         print(f"  step_iter: {step_iter}")
 
-    # Check main path
     if hasattr(agent, 'path') and agent.path:
         print(f"  agent.path length: {len(agent.path)}")
         print(f"  agent.path first 15: {[(n.x, n.y) for n in agent.path[:15]]}")
@@ -512,7 +459,6 @@ def debug_agent_68_paths(agent, stage, step_iter=None, new_path=None):
     else:
         print(f"  agent.path: None or empty")
 
-    # Check temp_path
     if hasattr(agent, 'temp_path') and agent.temp_path:
         print(f"  agent.temp_path length: {len(agent.temp_path)}")
         print(f"  agent.temp_path first 15: {[(n.x, n.y) for n in agent.temp_path[:15]]}")
@@ -523,7 +469,6 @@ def debug_agent_68_paths(agent, stage, step_iter=None, new_path=None):
     else:
         print(f"  agent.temp_path: None or empty")
 
-    # Check k_path
     if hasattr(agent, 'k_path') and agent.k_path:
         print(f"  agent.k_path length: {len(agent.k_path)}")
         print(f"  agent.k_path first 15: {[(n.x, n.y) for n in agent.k_path[:15]]}")
@@ -534,7 +479,6 @@ def debug_agent_68_paths(agent, stage, step_iter=None, new_path=None):
     else:
         print(f"  agent.k_path: None or empty")
 
-    # Check new_path if provided
     if new_path is not None:
         if new_path:
             print(f"  new_path length: {len(new_path)}")

@@ -7,20 +7,12 @@ from globals import *
 import csv
 
 
-# -------------------------------------------------------------------------------------------------------------------- #
-# -------------------------------------------------------------------------------------------------------------------- #
-# -------------------------------------------------------------------------------------------------------------------- #
-# HELP FUNCS
-# -------------------------------------------------------------------------------------------------------------------- #
-# -------------------------------------------------------------------------------------------------------------------- #
-# -------------------------------------------------------------------------------------------------------------------- #
 def save_results(logs_dict: dict):
     alg_names = logs_dict['alg_names']
     i_problems = logs_dict['i_problems']
     img_dir = logs_dict['img_dir']
     expr_type = logs_dict['expr_type']
     file_dir = f'logs_for_experiments/{expr_type}_{datetime.now().strftime("%Y-%m-%d--%H-%M")}_ALGS-{len(alg_names)}_RUNS-{i_problems}_MAP-{img_dir[:-4]}.json'
-    # Serializing json
     json_object = json.dumps(logs_dict, indent=4)
     with open(file_dir, "w") as outfile:
         outfile.write(json_object)
@@ -33,7 +25,6 @@ def set_seed(random_seed_bool, seed=1):
         seed = random.randint(0, 10000)
     random.seed(seed)
     np.random.seed(seed)
-    #print(f'[SEED]: --- {seed} ---')
 
 
 def get_dims_from_pic(img_dir: str, path: str = 'maps') -> Tuple[int, int]:
@@ -57,12 +48,10 @@ def get_np_from_dot_map(img_dir: str, path: str = 'maps') -> Tuple[np.ndarray, T
 
 
 def build_graph_from_np(img_np: np.ndarray, show_map: bool = False) -> Tuple[List[Node], Dict[str, Node]]:
-    # 0 - wall, 1 - free space
     nodes = []
     nodes_dict = {}
 
     x_size, y_size = img_np.shape
-    # CREATE NODES
     for i_x in range(x_size):
         for i_y in range(y_size):
             if img_np[i_x, i_y] == 1:
@@ -70,7 +59,6 @@ def build_graph_from_np(img_np: np.ndarray, show_map: bool = False) -> Tuple[Lis
                 nodes.append(node)
                 nodes_dict[node.xy_name] = node
 
-    # CREATE NEIGHBOURS
     for node1, node2 in combinations(nodes, 2):
         if abs(node1.x - node2.x) > 1 or abs(node1.y - node2.y) > 1:
             continue
@@ -78,15 +66,10 @@ def build_graph_from_np(img_np: np.ndarray, show_map: bool = False) -> Tuple[Lis
             continue
         node1.neighbours.append(node2.xy_name)
         node2.neighbours.append(node1.xy_name)
-        # dist = distance_nodes(node1, node2)
-        # if dist == 1:
 
     for node in nodes:
         node.neighbours.append(node.xy_name)
         heapq.heapify(node.neighbours)
-    # for node in nodes:
-    #     node.neighbours.append(node.xy_name)
-    #     node.neighbours.sort()
 
     for node in nodes:
         for nei in node.neighbours:
@@ -95,21 +78,15 @@ def build_graph_from_np(img_np: np.ndarray, show_map: bool = False) -> Tuple[Lis
     if show_map:
         plt.imshow(img_np, cmap='gray', origin='lower')
         plt.show()
-        # plt.pause(1)
-        # plt.close()
 
     return nodes, nodes_dict
 
 
 def exctract_h_dict(img_dir, path) -> Dict[str, np.ndarray]:
-    # print(f'Started to build heuristic for {kwargs['img_dir'][:-4]}...')
     possible_dir = f"{path}/h_dict_of_{img_dir[:-4]}.json"
 
-    # if there is one
     if os.path.exists(possible_dir):
-        # Opening JSON file
         with open(possible_dir, 'r') as openfile:
-            # Reading from json file
             h_dict = json.load(openfile)
             for k, v in h_dict.items():
                 h_dict[k] = np.array(v)
@@ -119,7 +96,6 @@ def exctract_h_dict(img_dir, path) -> Dict[str, np.ndarray]:
 
 
 def get_blocked_sv_map(img_dir: str, folder_dir: str = 'logs_for_freedom_maps'):
-    # possible_dir = f'{folder_dir}/blocked_{img_dir[:-4]}.npy'
     possible_dir = f'{folder_dir}/blocked_v2_{img_dir[:-4]}.npy'
     assert os.path.exists(possible_dir)
     with open(possible_dir, 'rb') as f:
@@ -152,7 +128,6 @@ def create_constraints(
     pc_np = np.ones((map_dim[0], map_dim[1])) * -1
     for path in paths:
         update_constraints(path, vc_np, ec_np, pc_np)
-        #update_constraints_tracked(path, vc_np, ec_np, pc_np)
     return vc_np, ec_np, pc_np
 
 
@@ -164,16 +139,10 @@ def init_constraints(
     ec_np: edge constraints [x, y, x, y, t] = bool
     pc_np: permanent constraints [x, y] = int or -1
     """
-    #max_path_len = 10
     if max_path_len == 0:
         return None, None, None
     vc_np = np.zeros((map_dim[0], map_dim[1], max_path_len))
     ec_np = np.zeros((map_dim[0], map_dim[1], map_dim[0], map_dim[1], max_path_len))
-    # vc_np = np.zeros((map_dim[0], map_dim[1], max_path_len), dtype=int)
-    # ec_np = np.zeros((map_dim[0], map_dim[1], map_dim[0], map_dim[1], max_path_len), dtype=int)
-    # pc_np = np.ones((map_dim[0], map_dim[1])) * -1
-    # vc_np = np.full((map_dim[0], map_dim[1], max_path_len), -1)  # -1 = empty
-    # ec_np = np.full((map_dim[0], map_dim[1], map_dim[0], map_dim[1], max_path_len), -1)
     pc_np = np.ones((map_dim[0], map_dim[1])) * -1
     return vc_np, ec_np, pc_np
 
@@ -185,10 +154,9 @@ def init_constraints_pie(
     ec_np: edge constraints [x, y, x, y, t] = bool
     pc_np: permanent constraints [x, y] = int or -1
     """
-    #max_path_len = 100
     if max_path_len == 0:
         return None, None, None
-    vc_np = np.full((map_dim[0], map_dim[1], max_path_len), -1)  # -1 = empty
+    vc_np = np.full((map_dim[0], map_dim[1], max_path_len), -1)
     ec_np = np.full((map_dim[0], map_dim[1], map_dim[0], map_dim[1], max_path_len), -1)
     pc_np = np.ones((map_dim[0], map_dim[1])) * -1
     return vc_np, ec_np, pc_np
@@ -214,7 +182,6 @@ def update_ec_table(
     """
     prev_n = path[0]
     for t, n in enumerate(path):
-        # ec
         ec_np[prev_n.x, prev_n.y, n.x, n.y, t] = 1
         prev_n = n
     return ec_np
@@ -228,38 +195,15 @@ def update_constraints(
     ec_np: edge constraints [x, y, x, y, t] = bool
     pc_np: permanent constraints [x, y] = int or -1
     """
-    # pc
     last_node = path[-1]
     last_time = len(path) - 1
     pc_np[last_node.x, last_node.y] = max(int(pc_np[last_node.x, last_node.y]), last_time)
     prev_n = path[0]
     for t, n in enumerate(path):
-        # vc
         vc_np[n.x, n.y, t] = 1
-        # ec
         ec_np[prev_n.x, prev_n.y, n.x, n.y, t] = 1
         prev_n = n
     return vc_np, ec_np, pc_np
-# def update_constraints(
-#         path: List[Node], vc_np: np.ndarray, ec_np: np.ndarray, pc_np: np.ndarray, agent_id
-# ) -> Tuple[np.ndarray | None, np.ndarray | None, np.ndarray | None]:
-#     """
-#     vc_np: vertex constraints [x, y, t] = bool
-#     ec_np: edge constraints [x, y, x, y, t] = bool
-#     pc_np: permanent constraints [x, y] = int or -1
-#     """
-#     # pc
-#     last_node = path[-1]
-#     last_time = len(path) - 1
-#     pc_np[last_node.x, last_node.y] = max(int(pc_np[last_node.x, last_node.y]), last_time)
-#     prev_n = path[0]
-#     for t, n in enumerate(path):
-#         # vc
-#         vc_np[n.x, n.y, t] = agent_id
-#         # ec
-#         ec_np[prev_n.x, prev_n.y, n.x, n.y, t] = agent_id
-#         prev_n = n
-#     return vc_np, ec_np, pc_np
 
 def align_all_paths(agents: List, flag_k_limit: bool = False) -> int:
     if len(agents) == 0:
@@ -294,16 +238,13 @@ def shorten_back_all_paths(agents: List) -> None:
 def check_one_vc_ec_neic_iter(path: List[Node], agent_name, other_paths: Dict[str, List[Node]], iteration: int) -> None:
     collisions: int = 0
     for agent_other_name, other_path in other_paths.items():
-        # vertex conf
         assert path[iteration] != other_path[iteration], f'[i: {iteration}] vertex conf: {path[iteration].xy_name}'
-        # edge conf
         prev_node1 = path[max(0, iteration - 1)]
         curr_node1 = path[iteration]
         prev_node2 = other_path[max(0, iteration - 1)]
         curr_node2 = other_path[iteration]
         edge1 = (prev_node1.x, prev_node1.y, curr_node1.x, curr_node1.y)
         edge2 = (curr_node2.x, curr_node2.y, prev_node2.x, prev_node2.y)
-        # nei conf
         assert path[iteration].xy_name in path[max(0, iteration - 1)].neighbours, f'[i: {iteration}] wow wow wow! Not nei pos!'
         assert edge1 != edge2, f'[i: {iteration}] edge collision: {edge1}'
     assert path[iteration].xy_name in path[max(0, iteration - 1)].neighbours, f'[i: {iteration}] wow wow wow! Not nei pos!'
@@ -312,20 +253,17 @@ def check_one_vc_ec_neic_iter(path: List[Node], agent_name, other_paths: Dict[st
 def check_vc_ec_neic_iter(agents: list | Deque, iteration: int, to_count: bool = False) -> int:
     collisions: int = 0
     for a1, a2 in combinations(agents, 2):
-        # vertex conf
         if not to_count:
             assert a1.path[iteration] != a2.path[iteration], f'[i: {iteration}] vertex conf: {a1.name}-{a2.name} in {a1.path[iteration].xy_name}'
         else:
             if a1.path[iteration] == a2.path[iteration]:
                 collisions += 1
-        # edge conf
         prev_node1 = a1.path[max(0, iteration - 1)]
         curr_node1 = a1.path[iteration]
         prev_node2 = a2.path[max(0, iteration - 1)]
         curr_node2 = a2.path[iteration]
         edge1 = (prev_node1.x, prev_node1.y, curr_node1.x, curr_node1.y)
         edge2 = (curr_node2.x, curr_node2.y, prev_node2.x, prev_node2.y)
-        # nei conf
         assert a1.path[iteration].xy_name in a1.path[max(0, iteration - 1)].neighbours, f'[i: {iteration}] wow wow wow! Not nei pos!'
         if not to_count:
             assert edge1 != edge2, f'[i: {iteration}] edge collision: {a1.name}-{a2.name} in {edge1}'
@@ -349,22 +287,18 @@ def check_configs(
     for a1, a2 in combinations(agents, 2):
         if a1.name not in config_to or a2.name not in config_to:
             continue
-        # vertex conf
         from_node_1: Node = config_from[a1.name]
         to_node_1: Node = config_to[a1.name]
         from_node_2: Node = config_from[a2.name]
         to_node_2: Node = config_to[a2.name]
 
-        # vc
         assert from_node_1 != from_node_2, f' vc: {a1.name}-{a2.name} in {from_node_1.xy_name}'
         assert to_node_1 != to_node_2, f' vc: {a1.name}-{a2.name} in {to_node_2.xy_name}'
 
-        # edge conf
         edge1 = (from_node_1.x, from_node_1.y, to_node_1.x, to_node_1.y)
         edge2 = (to_node_2.x, to_node_2.y, from_node_2.x, from_node_2.y)
         assert edge1 != edge2, f'ec: {a1.name}-{a2.name} in {edge1}'
 
-        # nei conf
         assert from_node_1.xy_name in to_node_1.neighbours, f'neic {a1.name}: {from_node_1.xy_name} not nei of {to_node_1.xy_name}'
         assert from_node_2.xy_name in to_node_2.neighbours, f'neic {a2.name}: {from_node_2.xy_name} not nei of {to_node_2.xy_name}'
 
@@ -380,12 +314,10 @@ def use_profiler(save_dir):
         def inner1(*args, **kwargs):
             profiler = cProfile.Profile()
             profiler.enable()
-            # getting the returned value
             returned_value = func(*args, **kwargs)
             profiler.disable()
             stats = pstats.Stats(profiler).sort_stats('cumtime')
             stats.dump_stats(save_dir)
-            # returning the value to the original frame
             return returned_value
         return inner1
     return decorator
@@ -394,7 +326,6 @@ def use_profiler(save_dir):
 def two_plans_have_no_confs(path1: List[Node], path2: List[Node]):
 
     min_len = min(len(path1), len(path2))
-    # assert len(path1) == len(path2)
     prev1 = None
     prev2 = None
     bigger_path = path1 if len(path1) >= len(path2) else path2
@@ -405,9 +336,6 @@ def two_plans_have_no_confs(path1: List[Node], path2: List[Node]):
         if vertex1.x == vertex2.x and vertex1.y == vertex2.y:
             return False
         if i > 0:
-            # edge1 = (prev1.xy_name, vertex1.xy_name)
-            # edge2 = (vertex2.xy_name, prev2.xy_name)
-            # if (prev1.x, prev1.y, vertex1.x, vertex1.y) == (vertex2.x, vertex2.y, prev2.x, prev2.y):
             if prev1.x == vertex2.x and prev1.y == vertex2.y and vertex1.x == prev2.x and vertex1.y == prev2.y:
                 return False
         prev1 = vertex1
@@ -461,13 +389,6 @@ def manhattan_dist(n1: Node, n2: Node):
     return np.abs(n1.x - n2.x) + np.abs(n1.y - n2.y)
 
 
-# -------------------------------------------------------------------------------------------------------------------- #
-# -------------------------------------------------------------------------------------------------------------------- #
-# -------------------------------------------------------------------------------------------------------------------- #
-# LIFELONG / k-LIMITED FUNCS
-# -------------------------------------------------------------------------------------------------------------------- #
-# -------------------------------------------------------------------------------------------------------------------- #
-# -------------------------------------------------------------------------------------------------------------------- #
 
 
 def add_k_paths_to_agents(agents: List[AgentAlg] | list) -> None:
@@ -494,9 +415,6 @@ def update_goal_nodes(agents: List[AgentAlg] | list, nodes: List[Node]) -> int:
             to_change_goal = True
 
         if to_change_goal:
-            # if random.random() < 0.5:
-            #     agent.goal_node = None
-            #     continue
             next_goal_node = random.choice(free_nodes)
             while next_goal_node.xy_name in goal_names:
                 next_goal_node = random.choice(free_nodes)
@@ -532,18 +450,11 @@ def repair_agents_k_paths(agents: List[AgentAlg] | list, k_limit: int) -> None:
             agent.k_path = wait_path[:]
         if agent.curr_node != agent.goal_node and is_wait_path(agent.k_path):
             standby_agents_dict[agent.name] = True
-            # print(f'agent {agent.num} wait')
         else:
             standby_agents_dict[agent.name] = False
-        # if agent.k_path is None or len(agent.k_path) == 0:
-        #     stay_k_path_agent(agent, agent.curr_node, k_limit + 1)
-        #     standby_agents_dict[agent.name] = True
-        # else:
-        #     standby_agents_dict[agent.name] = False
 
     all_good = False
     while not all_good:
-        #all_good = True
         for a1, a2 in combinations(agents, 2):
             if standby_agents_dict[a1.name] and standby_agents_dict[a2.name]:
                 continue
@@ -555,11 +466,9 @@ def repair_agents_k_paths(agents: List[AgentAlg] | list, k_limit: int) -> None:
                 standby_agents_dict[a1.name] = True
                 standby_agents_dict[a2.name] = True
                 all_good = False
-                # print(f"agents get wait path because they are bumping: {[a1.num,a2.num]}")
                 break
         else:
             all_good = True
-    #print(' | repaired')
     return
 
 def delete_wait_path(agents: List[AgentAlg] | list) -> None:
@@ -577,13 +486,6 @@ def is_wait_path(path: List[Node]) -> bool:
 def all_agents_reached_goal(agents: List[AgentAlg]) -> bool:
     return all(agent.curr_node == agent.goal_node for agent in agents)
 
-# -------------------------------------------------------------------------------------------------------------------- #
-# -------------------------------------------------------------------------------------------------------------------- #
-# -------------------------------------------------------------------------------------------------------------------- #
-# METRICS FUNCS
-# -------------------------------------------------------------------------------------------------------------------- #
-# -------------------------------------------------------------------------------------------------------------------- #
-# -------------------------------------------------------------------------------------------------------------------- #
 def shorten_back_path(input_path: List[Node]) -> List[Node]:
     path = input_path[:]
     if len(path) <= 2:
@@ -627,264 +529,166 @@ def calculate_soc(agents: List[AgentAlg]) -> int:
             temp += 1
     return soc
 
-#-----------------------------------
-# def set_distribution_function_class():
 def save_test(info,params):
     info_clone = info.copy()
     info_clone.pop('agents', None)
     info_clone.pop('distribution_function', None)
-    #if params["resources_per_agent"] == 15:
     if "number" in params["folder_name"]:
-        #filename = f"../results/number_of_agents/{params['map']}_{info['number_of_agents']}_{params['alg_name']}_{params['distribution_name']}_{params['resources_per_agent']}_{params['scene_index']}.json"
         dir_name = f"{params['map']}_{params['number_of_agents']}_{params['alg_name']}_{params['distribution_name']}_{params['resources_per_agent']}_{params['k_limit']}"
         dir_path = f"../results/number_of_agents/{dir_name}"
         if not os.path.exists(dir_path):
             os.makedirs(dir_path)
         file_name = f"{params['scene_index']}.json"
-        #file_path = os.path.join(dir_name, file_name)
         file_path = f"{dir_path}/{dir_name}_{file_name}"
         with open(file_path, 'w') as f:
             json.dump(info_clone, f)
-        # if os.path.exists(file_path):
-        #     pass
-        #     #print(f"File {file_path} already exists, skipping.")
-        # else:
-        #     with open(file_path, 'w') as f:
-        #         json.dump(info_clone, f)
-    #if params["number_of_agents"] == 150:
     if "resources" in params["folder_name"]:
         dir_name = f"{params['map']}_{params['number_of_agents']}_{params['alg_name']}_{params['distribution_name']}_{params['resources_per_agent']}_{params['k_limit']}"
-        #filename = f"../results/resources_per_agent/{params['map']}_{info['number_of_agents']}_{params['alg_name']}_{params['distribution_name']}_{params['resources_per_agent']}_{params['scene_index']}.json"
         dir_path = f"../results/resources_per_agent/{dir_name}"
         if not os.path.exists(dir_path):
             os.makedirs(dir_path)
         file_name = f"{params['scene_index']}.json"
-        #file_path = os.path.join(dir_name, file_name)
         file_path = f"{dir_path}/{dir_name}_{file_name}"
         with open(file_path, 'w') as f:
             json.dump(info_clone, f)
-        # if os.path.exists(file_path):
-        #     pass
-        #     #print(f"File {file_path} already exists, skipping.")
-        # else:
-        #     with open(file_path, 'w') as f:
-        #         json.dump(info_clone, f)
     if "prefix" in params["folder_name"]:
         dir_name = f"{params['map']}_{params['number_of_agents']}_{params['alg_name']}_{params['distribution_name']}_{params['resources_per_agent']}_{params['k_limit']}"
-        #filename = f"../results/resources_per_agent/{params['map']}_{info['number_of_agents']}_{params['alg_name']}_{params['distribution_name']}_{params['resources_per_agent']}_{params['scene_index']}.json"
         dir_path = f"../results/prefix/{dir_name}"
         if not os.path.exists(dir_path):
             os.makedirs(dir_path)
         file_name = f"{params['scene_index']}.json"
-        #file_path = os.path.join(dir_name, file_name)
         file_path = f"{dir_path}/{dir_name}_{file_name}"
         with open(file_path, 'w') as f:
             json.dump(info_clone, f)
-        # if os.path.exists(file_path):
-        #     pass
-        #     #print(f"File {file_path} already exists, skipping.")
-        # else:
-        #     with open(file_path, 'w') as f:
-        #         json.dump(info_clone, f)
     if "max_budget" in params["folder_name"]:
         dir_name = f"{params['map']}_{params['number_of_agents']}_{params['alg_name']}_{params['distribution_name']}_{params['resources_per_agent']}_{params['k_limit']}"
-        #filename = f"../results/resources_per_agent/{params['map']}_{info['number_of_agents']}_{params['alg_name']}_{params['distribution_name']}_{params['resources_per_agent']}_{params['scene_index']}.json"
         dir_path = f"../results/max_budget/{dir_name}"
         if not os.path.exists(dir_path):
             os.makedirs(dir_path)
         file_name = f"{params['scene_index']}.json"
-        #file_path = os.path.join(dir_name, file_name)
         file_path = f"{dir_path}/{dir_name}_{file_name}"
         with open(file_path, 'w') as f:
             json.dump(info_clone, f)
 
     if "LNS1_none" in params["folder_name"]:
         dir_name = f"{params['map']}_{params['number_of_agents']}_{params['alg_name']}_{params['distribution_name']}_{params['resources_per_agent']}_{params['k_limit']}"
-        # filename = f"../results/resources_per_agent/{params['map']}_{info['number_of_agents']}_{params['alg_name']}_{params['distribution_name']}_{params['resources_per_agent']}_{params['scene_index']}.json"
         dir_path = f"../results/LNS2_LNS1_none/{dir_name}"
         if not os.path.exists(dir_path):
             os.makedirs(dir_path)
         file_name = f"{params['scene_index']}.json"
-        # file_path = os.path.join(dir_name, file_name)
         file_path = f"{dir_path}/{dir_name}_{file_name}"
         with open(file_path, 'w') as f:
             json.dump(info_clone, f)
 
     if "LNS1_shared" in params["folder_name"]:
         dir_name = f"{params['map']}_{params['number_of_agents']}_{params['alg_name']}_{params['distribution_name']}_{params['resources_per_agent']}_{params['k_limit']}"
-        # filename = f"../results/resources_per_agent/{params['map']}_{info['number_of_agents']}_{params['alg_name']}_{params['distribution_name']}_{params['resources_per_agent']}_{params['scene_index']}.json"
         dir_path = f"../results/LNS2_LNS1_shared/{dir_name}"
         if not os.path.exists(dir_path):
             os.makedirs(dir_path)
         file_name = f"{params['scene_index']}.json"
-        # file_path = os.path.join(dir_name, file_name)
         file_path = f"{dir_path}/{dir_name}_{file_name}"
         with open(file_path, 'w') as f:
             json.dump(info_clone, f)
 
     if "LNS1_pid" in params["folder_name"]:
         dir_name = f"{params['map']}_{params['number_of_agents']}_{params['alg_name']}_{params['distribution_name']}_{params['resources_per_agent']}_{params['k_limit']}"
-        # filename = f"../results/resources_per_agent/{params['map']}_{info['number_of_agents']}_{params['alg_name']}_{params['distribution_name']}_{params['resources_per_agent']}_{params['scene_index']}.json"
         dir_path = f"../results/LNS2_LNS1_pid/{dir_name}"
         if not os.path.exists(dir_path):
             os.makedirs(dir_path)
         file_name = f"{params['scene_index']}.json"
-        # file_path = os.path.join(dir_name, file_name)
         file_path = f"{dir_path}/{dir_name}_{file_name}"
         with open(file_path, 'w') as f:
             json.dump(info_clone, f)
-        # if os.path.exists(file_path):
-        #     pass
-        #     #print(f"File {file_path} already exists, skipping.")
-        # else:
-        #     with open(file_path, 'w') as f:
-        #         json.dump(info_clone, f)
-    # filename = f"../results/{params['map']}_{info['number_of_agents']}_{params['alg_name']}_{params['distribution_name']}_{params['resources_per_agent']}_{params['scene_index']}.json"
-    # if params["alg_name"] == "PIBT":
-    #     filename = f"../results/{params['map']}_{info['number_of_agents']}_{params['alg_name']}_{params['distribution_name']}_{params['resources_per_agent']}_{params['scene_index']}.json"
     print(f"saving {file_path}")
-    # with open(filename, 'w') as f:
-    #     json.dump(info_clone, f)
-    #print('saved')
 
 def save_test_LNS2(info,params):
     info_clone = info.copy()
     info_clone.pop('agents', None)
     info_clone.pop('distribution_function', None)
-    #if params["resources_per_agent"] == 15:
     if "number" in params["folder_name"]:
-        #filename = f"../results/number_of_agents/{params['map']}_{info['number_of_agents']}_{params['alg_name']}_{params['distribution_name']}_{params['resources_per_agent']}_{params['scene_index']}.json"
         dir_name = f"{params['map']}_{params['number_of_agents']}_{params['alg_name']}_{params['distribution_name']}_{params['resources_per_agent']}_{params['k_limit']}"
         dir_path = f"../results/PIBT+/number_of_agents/{dir_name}"
         if not os.path.exists(dir_path):
             os.makedirs(dir_path)
         file_name = f"{params['scene_index']}.json"
-        #file_path = os.path.join(dir_name, file_name)
         file_path = f"{dir_path}/{dir_name}_{file_name}"
         with open(file_path, 'w') as f:
             json.dump(info_clone, f)
-        # if os.path.exists(file_path):
-        #     pass
-        #     #print(f"File {file_path} already exists, skipping.")
-        # else:
-        #     with open(file_path, 'w') as f:
-        #         json.dump(info_clone, f)
-    #if params["number_of_agents"] == 150:
     if "resources" in params["folder_name"]:
         dir_name = f"{params['map']}_{params['number_of_agents']}_{params['alg_name']}_{params['distribution_name']}_{params['resources_per_agent']}_{params['k_limit']}"
-        #filename = f"../results/resources_per_agent/{params['map']}_{info['number_of_agents']}_{params['alg_name']}_{params['distribution_name']}_{params['resources_per_agent']}_{params['scene_index']}.json"
         dir_path = f"../results/PIBT+/resources_per_agent/{dir_name}"
         if not os.path.exists(dir_path):
             os.makedirs(dir_path)
         file_name = f"{params['scene_index']}.json"
-        #file_path = os.path.join(dir_name, file_name)
         file_path = f"{dir_path}/{dir_name}_{file_name}"
         with open(file_path, 'w') as f:
             json.dump(info_clone, f)
-        # if os.path.exists(file_path):
-        #     pass
-        #     #print(f"File {file_path} already exists, skipping.")
-        # else:
-        #     with open(file_path, 'w') as f:
-        #         json.dump(info_clone, f)
     if "prefix" in params["folder_name"]:
         dir_name = f"{params['map']}_{params['number_of_agents']}_{params['alg_name']}_{params['distribution_name']}_{params['resources_per_agent']}_{params['k_limit']}"
-        #filename = f"../results/resources_per_agent/{params['map']}_{info['number_of_agents']}_{params['alg_name']}_{params['distribution_name']}_{params['resources_per_agent']}_{params['scene_index']}.json"
         dir_path = f"../results/PIBT+/prefix/{dir_name}"
         if not os.path.exists(dir_path):
             os.makedirs(dir_path)
         file_name = f"{params['scene_index']}.json"
-        #file_path = os.path.join(dir_name, file_name)
         file_path = f"{dir_path}/{dir_name}_{file_name}"
         with open(file_path, 'w') as f:
             json.dump(info_clone, f)
-        # if os.path.exists(file_path):
-        #     pass
-        #     #print(f"File {file_path} already exists, skipping.")
-        # else:
-        #     with open(file_path, 'w') as f:
-        #         json.dump(info_clone, f)
     if "max_budget" in params["folder_name"]:
         dir_name = f"{params['map']}_{params['number_of_agents']}_{params['alg_name']}_{params['distribution_name']}_{params['resources_per_agent']}_{params['k_limit']}"
-        #filename = f"../results/resources_per_agent/{params['map']}_{info['number_of_agents']}_{params['alg_name']}_{params['distribution_name']}_{params['resources_per_agent']}_{params['scene_index']}.json"
         dir_path = f"../results/PIBT+/max_budget/{dir_name}"
         if not os.path.exists(dir_path):
             os.makedirs(dir_path)
         file_name = f"{params['scene_index']}.json"
-        #file_path = os.path.join(dir_name, file_name)
         file_path = f"{dir_path}/{dir_name}_{file_name}"
         with open(file_path, 'w') as f:
             json.dump(info_clone, f)
 
     if "excess_budget" in params["folder_name"]:
         dir_name = f"{params['map']}_{params['number_of_agents']}_{params['alg_name']}_{params['distribution_name']}_{params['resources_per_agent']}_{params['k_limit']}"
-        # filename = f"../results/resources_per_agent/{params['map']}_{info['number_of_agents']}_{params['alg_name']}_{params['distribution_name']}_{params['resources_per_agent']}_{params['scene_index']}.json"
         dir_path = f"../results/PIBT+excess_budget/25-50/budget-prefix/{dir_name}"
         if not os.path.exists(dir_path):
             os.makedirs(dir_path)
         file_name = f"{params['scene_index']}.json"
-        # file_path = os.path.join(dir_name, file_name)
         file_path = f"{dir_path}/{dir_name}_{file_name}"
         with open(file_path, 'w') as f:
             json.dump(info_clone, f)
-        # if os.path.exists(file_path):
-        #     pass
-        #     #print(f"File {file_path} already exists, skipping.")
-        # else:
-        #     with open(file_path, 'w') as f:
-        #         json.dump(info_clone, f)
-    # filename = f"../results/{params['map']}_{info['number_of_agents']}_{params['alg_name']}_{params['distribution_name']}_{params['resources_per_agent']}_{params['scene_index']}.json"
-    # if params["alg_name"] == "PIBT":
-    #     filename = f"../results/{params['map']}_{info['number_of_agents']}_{params['alg_name']}_{params['distribution_name']}_{params['resources_per_agent']}_{params['scene_index']}.json"
     print(f"+PIBT saving {file_path}")
-    # with open(filename, 'w') as f:
-    #     json.dump(info_clone, f)
-    #print('saved')
 
 def save_test_PIE(info,params):
     info_clone = info.copy()
     info_clone.pop('agents', None)
     info_clone.pop('distribution_function', None)
-    #if params["resources_per_agent"] == 15:
     if "number" in params["folder_name"]:
-        #filename = f"../results/number_of_agents/{params['map']}_{info['number_of_agents']}_{params['alg_name']}_{params['distribution_name']}_{params['resources_per_agent']}_{params['scene_index']}.json"
         dir_name = f"{params['map']}_{params['number_of_agents']}_{params['alg_name']}_{params['distribution_name']}_{params['resources_per_agent']}_{params['k_limit']}"
         dir_path = f"../results/PIE/number_of_agents/{dir_name}"
         if not os.path.exists(dir_path):
             os.makedirs(dir_path)
         file_name = f"{params['scene_index']}.json"
-        #file_path = os.path.join(dir_name, file_name)
         file_path = f"{dir_path}/{dir_name}_{file_name}"
         with open(file_path, 'w') as f:
             json.dump(info_clone, f)
 
     if "resources" in params["folder_name"]:
         dir_name = f"{params['map']}_{params['number_of_agents']}_{params['alg_name']}_{params['distribution_name']}_{params['resources_per_agent']}_{params['k_limit']}"
-        #filename = f"../results/resources_per_agent/{params['map']}_{info['number_of_agents']}_{params['alg_name']}_{params['distribution_name']}_{params['resources_per_agent']}_{params['scene_index']}.json"
         dir_path = f"../results/PIE/resources_per_agent/{dir_name}"
         if not os.path.exists(dir_path):
             os.makedirs(dir_path)
         file_name = f"{params['scene_index']}.json"
-        #file_path = os.path.join(dir_name, file_name)
         file_path = f"{dir_path}/{dir_name}_{file_name}"
         with open(file_path, 'w') as f:
             json.dump(info_clone, f)
 
     if "prefix" in params["folder_name"]:
         dir_name = f"{params['map']}_{params['number_of_agents']}_{params['alg_name']}_{params['distribution_name']}_{params['resources_per_agent']}_{params['k_limit']}"
-        #filename = f"../results/resources_per_agent/{params['map']}_{info['number_of_agents']}_{params['alg_name']}_{params['distribution_name']}_{params['resources_per_agent']}_{params['scene_index']}.json"
         dir_path = f"../results/PIE/prefix/{dir_name}"
         if not os.path.exists(dir_path):
             os.makedirs(dir_path)
         file_name = f"{params['scene_index']}.json"
-        #file_path = os.path.join(dir_name, file_name)
         file_path = f"{dir_path}/{dir_name}_{file_name}"
         with open(file_path, 'w') as f:
             json.dump(info_clone, f)
 
     if "max_budget" in params["folder_name"]:
         dir_name = f"{params['map']}_{params['number_of_agents']}_{params['alg_name']}_{params['distribution_name']}_{params['resources_per_agent']}_{params['k_limit']}"
-        #filename = f"../results/resources_per_agent/{params['map']}_{info['number_of_agents']}_{params['alg_name']}_{params['distribution_name']}_{params['resources_per_agent']}_{params['scene_index']}.json"
         dir_path = f"../results/PIE/max_budget/{dir_name}"
         if not os.path.exists(dir_path):
             os.makedirs(dir_path)
@@ -899,46 +703,38 @@ def save_test_LACAM(info, params):
     info_clone = info.copy()
     info_clone.pop('agents', None)
     info_clone.pop('distribution_function', None)
-    # if params["resources_per_agent"] == 15:
     if "number" in params["folder_name"]:
-        # filename = f"../results/number_of_agents/{params['map']}_{info['number_of_agents']}_{params['alg_name']}_{params['distribution_name']}_{params['resources_per_agent']}_{params['scene_index']}.json"
         dir_name = f"{params['map']}_{params['number_of_agents']}_{params['alg_name']}_{params['distribution_name']}_{params['resources_per_agent']}_{params['k_limit']}"
         dir_path = f"../results/LACAM/number_of_agents/{dir_name}"
         if not os.path.exists(dir_path):
             os.makedirs(dir_path)
         file_name = f"{params['scene_index']}.json"
-        # file_path = os.path.join(dir_name, file_name)
         file_path = f"{dir_path}/{dir_name}_{file_name}"
         with open(file_path, 'w') as f:
             json.dump(info_clone, f)
 
     if "resources" in params["folder_name"]:
         dir_name = f"{params['map']}_{params['number_of_agents']}_{params['alg_name']}_{params['distribution_name']}_{params['resources_per_agent']}_{params['k_limit']}"
-        # filename = f"../results/resources_per_agent/{params['map']}_{info['number_of_agents']}_{params['alg_name']}_{params['distribution_name']}_{params['resources_per_agent']}_{params['scene_index']}.json"
         dir_path = f"../results/LACAM/resources_per_agent/{dir_name}"
         if not os.path.exists(dir_path):
             os.makedirs(dir_path)
         file_name = f"{params['scene_index']}.json"
-        # file_path = os.path.join(dir_name, file_name)
         file_path = f"{dir_path}/{dir_name}_{file_name}"
         with open(file_path, 'w') as f:
             json.dump(info_clone, f)
 
     if "prefix" in params["folder_name"]:
         dir_name = f"{params['map']}_{params['number_of_agents']}_{params['alg_name']}_{params['distribution_name']}_{params['resources_per_agent']}_{params['k_limit']}"
-        # filename = f"../results/resources_per_agent/{params['map']}_{info['number_of_agents']}_{params['alg_name']}_{params['distribution_name']}_{params['resources_per_agent']}_{params['scene_index']}.json"
         dir_path = f"../results/PIE/prefix/{dir_name}"
         if not os.path.exists(dir_path):
             os.makedirs(dir_path)
         file_name = f"{params['scene_index']}.json"
-        # file_path = os.path.join(dir_name, file_name)
         file_path = f"{dir_path}/{dir_name}_{file_name}"
         with open(file_path, 'w') as f:
             json.dump(info_clone, f)
 
     if "max_budget" in params["folder_name"]:
         dir_name = f"{params['map']}_{params['number_of_agents']}_{params['alg_name']}_{params['distribution_name']}_{params['resources_per_agent']}_{params['k_limit']}"
-        # filename = f"../results/resources_per_agent/{params['map']}_{info['number_of_agents']}_{params['alg_name']}_{params['distribution_name']}_{params['resources_per_agent']}_{params['scene_index']}.json"
         dir_path = f"../results/LACAM/max_budget/{dir_name}"
         if not os.path.exists(dir_path):
             os.makedirs(dir_path)
@@ -956,178 +752,20 @@ def making_start_and_goal_lists(nodes, params):
     start_nodes = []
     goal_nodes = []
 
-    # # Check if this is the special case: room-32-32-4 map with scene_index > 25
-    # is_special_case_1 = (params["map"] == "room-32-32-4.map" and params["scene_index"] > 25 and params["scene_index"] <= 50)
-    # is_special_case_2 = (params["map"] == "room-32-32-4.map" and params["scene_index"] > 50)
-    #
-    # if is_special_case_1:
-    #     # Create a local random generator with seed based on scene_index
-    #     # This won't affect the global random state
-    #     local_rng = random.Random(params["scene_index"])
-    #
-    #     # Special case: starts in top-left corner, goals on bottom-right outskirts
-    #
-    #     # Define top-left corner region (x < 12, y < 12)
-    #     top_left_nodes = [node for node in nodes if node.x <= 10 and node.y <= 10]
-    #
-    #     # Define bottom-right outskirts (x > 21, y > 21)
-    #     bottom_right_outskirts = [
-    #         node for node in nodes
-    #         if node.x >= 24 or node.y >= 24
-    #     ]
-    #
-    #     if len(top_left_nodes) < n_agents:
-    #         raise ValueError(
-    #             f"Not enough nodes in top-left corner for {n_agents} agents. "
-    #             f"Only {len(top_left_nodes)} available."
-    #         )
-    #
-    #     if len(bottom_right_outskirts) < n_agents:
-    #         raise ValueError(
-    #             f"Not enough nodes in bottom-right outskirts for {n_agents} agents. "
-    #             f"Only {len(bottom_right_outskirts)} available."
-    #         )
-    #
-    #     # Sample start positions from top-left corner using local RNG
-    #     start_nodes = local_rng.sample(top_left_nodes, n_agents)
-    #
-    #     # Sample goal positions from bottom-right outskirts using local RNG
-    #     goal_nodes = local_rng.sample(bottom_right_outskirts, n_agents)
-    #
-    #     # Randomly pair them (shuffle the goals) using local RNG
-    #     local_rng.shuffle(goal_nodes)
-    #
-    # elif is_special_case_2:
-    #     # Create a local random generator with seed based on scene_index
-    #     # This won't affect the global random state
-    #     local_rng = random.Random(params["scene_index"])
-    #
-    #     # Special case: starts in top-left corner, goals on bottom-right outskirts
-    #
-    #     # Define top-left corner region (x < 12, y < 12)
-    #     center_nodes = [node for node in nodes if node.x >= 11 and node.y <= 21 and node.x <= 21 and node.y >= 11]
-    #
-    #     # Define bottom-right outskirts (x > 21, y > 21)
-    #     outskirts = [
-    #         node for node in nodes
-    #         if node.x >= 26 or node.y >= 26 or node.x <= 6 or node.y <= 6
-    #     ]
-    #
-    #     if len(center_nodes) < n_agents:
-    #         raise ValueError(
-    #             f"Not enough nodes in center for {n_agents} agents. "
-    #             f"Only {len(center_nodes)} available."
-    #         )
-    #
-    #     if len(outskirts) < n_agents:
-    #         raise ValueError(
-    #             f"Not enough nodes in outskirts for {n_agents} agents. "
-    #             f"Only {len(outskirts)} available."
-    #         )
-    #
-    #     # Sample start positions from top-left corner using local RNG
-    #     start_nodes = local_rng.sample(center_nodes, n_agents)
-    #
-    #     # Sample goal positions from bottom-right outskirts using local RNG
-    #     goal_nodes = local_rng.sample(outskirts, n_agents)
-    #
-    #     # Randomly pair them (shuffle the goals) using local RNG
-    #     local_rng.shuffle(goal_nodes)
-    #
-    # else:
-    #     # Original logic for regular cases
-    #     with open(agents_file, 'r', newline='') as f:
-    #         # Set the delimiter to '\t' for tab-separated values.
-    #         reader = csv.reader(f, delimiter='\t')
-    #         # Uncomment the next line if your file has a header row
-    #         # next(reader, None)
-    #         for i, row in enumerate(reader):
-    #             # print(row)
-    #             if i >= n_agents + 1:
-    #                 break
-    #             if len(row) < 8:
-    #                 continue
-    #             # The file is assumed to have at least 8 elements per row:
-    #             # 5th element (index 4): start node X
-    #             # 6th element (index 5): start node Y
-    #             # 7th element (index 6): goal node X
-    #             # 8th element (index 7): goal node Y
-    #             start_x = int(row[5])
-    #             start_y = int(row[4])
-    #             goal_x = int(row[7])
-    #             goal_y = int(row[6])
-    #
-    #             # Find the node in 'nodes' matching the starting coordinates
-    #             start_node = next((node for node in nodes if node.x == start_x and node.y == start_y), None)
-    #             # Find the node in 'nodes' matching the goal coordinates
-    #             goal_node = next((node for node in nodes if node.x == goal_x and node.y == goal_y), None)
-    #
-    #             if start_node is None or goal_node is None:
-    #                 raise ValueError(
-    #                     f"Could not find matching node for agent {i}: "
-    #                     f"start=({start_x}, {start_y}), goal=({goal_x}, {goal_y})"
-    #                 )
-    #
-    #             start_nodes.append(start_node)
-    #             goal_nodes.append(goal_node)
-    #
-    #     # Fill remaining slots with random nodes if we don't have enough agents
-    #     remaining_needed = n_agents - len(start_nodes)
-    #     if remaining_needed > 0:
-    #         # Create sets of already used nodes
-    #         used_start_nodes = set(start_nodes)
-    #         used_goal_nodes = set(goal_nodes)
-    #
-    #         # Filter out already used start and goal nodes
-    #         available_for_start = [node for node in nodes if node not in used_start_nodes]
-    #         available_for_goal = [node for node in nodes if node not in used_goal_nodes]
-    #
-    #         # Check if we have enough nodes for starts and goals separately
-    #         if remaining_needed > len(available_for_start):
-    #             raise ValueError(
-    #                 f"Not enough available nodes for start positions. "
-    #                 f"Need {remaining_needed} nodes but only have {len(available_for_start)} available."
-    #             )
-    #         if remaining_needed > len(available_for_goal):
-    #             raise ValueError(
-    #                 f"Not enough available nodes for goal positions. "
-    #                 f"Need {remaining_needed} nodes but only have {len(available_for_goal)} available."
-    #             )
-    #
-    #         # Sample unique start and goal nodes separately
-    #         random_start_nodes = random.sample(available_for_start, remaining_needed)
-    #         random_goal_nodes = random.sample(available_for_goal, remaining_needed)
-    #
-    #         # Assign to agents
-    #         for i in range(remaining_needed):
-    #             start_nodes.append(random_start_nodes[i])
-    #             goal_nodes.append(random_goal_nodes[i])
 
-   # Original logic for regular cases
     with open(agents_file, 'r', newline='') as f:
-        # Set the delimiter to '\t' for tab-separated values.
         reader = csv.reader(f, delimiter='\t')
-        # Uncomment the next line if your file has a header row
-        # next(reader, None)
         for i, row in enumerate(reader):
-            # print(row)
             if i >= n_agents + 1:
                 break
             if len(row) < 8:
                 continue
-            # The file is assumed to have at least 8 elements per row:
-            # 5th element (index 4): start node X
-            # 6th element (index 5): start node Y
-            # 7th element (index 6): goal node X
-            # 8th element (index 7): goal node Y
             start_x = int(row[5])
             start_y = int(row[4])
             goal_x = int(row[7])
             goal_y = int(row[6])
 
-            # Find the node in 'nodes' matching the starting coordinates
             start_node = next((node for node in nodes if node.x == start_x and node.y == start_y), None)
-            # Find the node in 'nodes' matching the goal coordinates
             goal_node = next((node for node in nodes if node.x == goal_x and node.y == goal_y), None)
 
             if start_node is None or goal_node is None:
@@ -1139,18 +777,14 @@ def making_start_and_goal_lists(nodes, params):
             start_nodes.append(start_node)
             goal_nodes.append(goal_node)
 
-    # Fill remaining slots with random nodes if we don't have enough agents
     remaining_needed = n_agents - len(start_nodes)
     if remaining_needed > 0:
-        # Create sets of already used nodes
         used_start_nodes = set(start_nodes)
         used_goal_nodes = set(goal_nodes)
 
-        # Filter out already used start and goal nodes
         available_for_start = [node for node in nodes if node not in used_start_nodes]
         available_for_goal = [node for node in nodes if node not in used_goal_nodes]
 
-        # Check if we have enough nodes for starts and goals separately
         if remaining_needed > len(available_for_start):
             raise ValueError(
                 f"Not enough available nodes for start positions. "
@@ -1162,11 +796,9 @@ def making_start_and_goal_lists(nodes, params):
                 f"Need {remaining_needed} nodes but only have {len(available_for_goal)} available."
             )
 
-        # Sample unique start and goal nodes separately
         random_start_nodes = random.sample(available_for_start, remaining_needed)
         random_goal_nodes = random.sample(available_for_goal, remaining_needed)
 
-        # Assign to agents
         for i in range(remaining_needed):
             start_nodes.append(random_start_nodes[i])
             goal_nodes.append(random_goal_nodes[i])
@@ -1174,132 +806,20 @@ def making_start_and_goal_lists(nodes, params):
     return start_nodes, goal_nodes
 
 
-# def update_constraints_tracked(
-#         path: List[Node], vc_np: np.ndarray, ec_np: np.ndarray, pc_np: np.ndarray, agent
-# ) -> Tuple[np.ndarray | None, np.ndarray | None, np.ndarray | None]:
-#     """
-#     Update constraints AND track what we set for fast removal
-#     """
-#     # if isinstance(agent, int):
-#     #     # Handle old calls that pass agent.num instead of agent object
-#     #     agent_id = agent
-#     #     # Can't track in this case, fall back to old method
-#     #     return update_constraints_old(path, vc_np, ec_np, pc_np, agent_id)
-#     if isinstance(agent, int):
-#         print(f"⚠️  WARNING: update_constraints called with agent_id {agent} instead of agent object!")
-#         print(f"   This call won't be tracked! Called from:")
-#         import traceback
-#         traceback.print_stack()
-#     print(f"📝 Setting tracked constraints for agent {agent.num}, path length: {len(path)}")
-#
-#     agent_id = agent.num
-#
-#     # Clear previous tracking
-#     agent.my_vertex_constraints.clear()
-#     agent.my_edge_constraints.clear()
-#     agent.my_permanent_constraint = None
-#
-#     # Set permanent constraint
-#     if len(path) > 0:
-#         last_node = path[-1]
-#         last_time = len(path) - 1
-#         pc_np[last_node.x, last_node.y] = max(int(pc_np[last_node.x, last_node.y]), last_time)
-#         agent.my_permanent_constraint = (last_node.x, last_node.y)
-#
-#     # Set vertex and edge constraints
-#     prev_n = path[0] if len(path) > 0 else None
-#     for t, n in enumerate(path):
-#         # Vertex constraint
-#         if t < vc_np.shape[2]:
-#             vc_np[n.x, n.y, t] = agent_id
-#             agent.my_vertex_constraints.append((n.x, n.y, t))
-#
-#         # Edge constraint
-#         if prev_n and t < ec_np.shape[4]:
-#             ec_np[prev_n.x, prev_n.y, n.x, n.y, t] = agent_id
-#             agent.my_edge_constraints.append((prev_n.x, prev_n.y, n.x, n.y, t))
-#
-#         prev_n = n
-#
-#     return vc_np, ec_np, pc_np
 
 
-# def remove_agents_constraints_fast(agents_subset: List, vc_np: np.ndarray,
-#                                    ec_np: np.ndarray, pc_np: np.ndarray):
-    # """
-    # FAST removal - only touch what we know we set
-    # """
-    # for agent in agents_subset:
-    #     # Remove vertex constraints
-    #     for x, y, t in agent.my_vertex_constraints:
-    #         if t < vc_np.shape[2]:  # Bounds check
-    #             vc_np[x, y, t] = 0
-    #
-    #     # Remove edge constraints
-    #     for x1, y1, x2, y2, t in agent.my_edge_constraints:
-    #         if t < ec_np.shape[4]:  # Bounds check
-    #             ec_np[x1, y1, x2, y2, t] = 0
-    #
-    #     # Remove permanent constraint
-    #     if agent.my_permanent_constraint:
-    #         x, y = agent.my_permanent_constraint
-    #         # Only remove if we set it (check the time matches)
-    #         if hasattr(agent, 'path') and agent.path:
-    #             expected_time = len(agent.path) - 1
-    #             if pc_np[x, y] == expected_time:
-    #                 pc_np[x, y] = -1
-    #         elif hasattr(agent, 'temp_path') and agent.temp_path:
-    #             expected_time = len(agent.temp_path) - 1
-    #             if pc_np[x, y] == expected_time:
-    #                 pc_np[x, y] = -1
-    #
-    #     # Clear tracking
-    #     agent.my_vertex_constraints.clear()
-    #     agent.my_edge_constraints.clear()
-    #     agent.my_permanent_constraint = None
-# def remove_agents_constraints_fast(agents_subset: List, vc_np: np.ndarray,
-#                                    ec_np: np.ndarray, pc_np: np.ndarray):
-#     for agent in agents_subset:
-#         # Remove vertex constraints
-#         for x, y, t in agent.my_vertex_constraints:
-#             if t < vc_np.shape[2]:
-#                 vc_np[x, y, t] = 0
-#
-#         # Remove edge constraints
-#         for x1, y1, x2, y2, t in agent.my_edge_constraints:
-#             if t < ec_np.shape[4]:
-#                 ec_np[x1, y1, x2, y2, t] = 0
-#
-#         # ✅ FIXED: Only remove permanent constraint if it matches what we set
-#         if agent.my_permanent_constraint:
-#             x, y = agent.my_permanent_constraint
-#             if hasattr(agent, 'path') and agent.path:
-#                 expected_time = len(agent.path) - 1
-#                 if pc_np[x, y] == expected_time:
-#                     pc_np[x, y] = -1
-#             elif hasattr(agent, 'temp_path') and agent.temp_path:
-#                 expected_time = len(agent.temp_path) - 1
-#                 if pc_np[x, y] == expected_time:
-#                     pc_np[x, y] = -1
-#
-#         # Clear tracking
-#         agent.my_vertex_constraints.clear()
-#         agent.my_edge_constraints.clear()
-#         agent.my_permanent_constraint = None
 
 
 def remove_agents_constraints_fast(agents_subset: List, vc_np: np.ndarray,
                                    ec_np: np.ndarray, pc_np: np.ndarray,
-                                   step_iter: int = 0):  # Add step_iter parameter
+                                   step_iter: int = 0):
     """
     Remove constraints for multiple agents, but ONLY for times >= step_iter
     """
-    #print(f"🔍 Removing tracked constraints for {len(agents_subset)} agents (preserving times < {step_iter})...")
 
     total_removed = 0
     for agent in agents_subset:
         if not hasattr(agent, 'my_vertex_constraints'):
-            #print(f"⚠️  Agent {agent.num} has no constraint tracking - initializing")
             agent.my_vertex_constraints = []
             agent.my_edge_constraints = []
             agent.my_permanent_constraint = None
@@ -1307,54 +827,32 @@ def remove_agents_constraints_fast(agents_subset: List, vc_np: np.ndarray,
 
         agent_removed = 0
 
-        # Remove tracked vertex constraints ONLY for times >= step_iter
         new_vertex_constraints = []
         for x, y, t in agent.my_vertex_constraints:
             if t >= step_iter and t < vc_np.shape[2]:
                 vc_np[x, y, t] = -1
                 agent_removed += 1
             else:
-                # Keep constraints for times < step_iter
                 new_vertex_constraints.append((x, y, t))
         agent.my_vertex_constraints = new_vertex_constraints
 
-        # Remove tracked edge constraints ONLY for times >= step_iter
         new_edge_constraints = []
         for x1, y1, x2, y2, t in agent.my_edge_constraints:
             if t >= step_iter and t < ec_np.shape[4]:
                 ec_np[x1, y1, x2, y2, t] = -1
                 agent_removed += 1
             else:
-                # Keep constraints for times < step_iter
                 new_edge_constraints.append((x1, y1, x2, y2, t))
         agent.my_edge_constraints = new_edge_constraints
 
-        # Handle permanent constraints (only remove if it's in the future)
-        # if agent.my_permanent_constraint:
-        #     x, y = agent.my_permanent_constraint
-        #     if hasattr(agent, 'path') and agent.path:
-        #         expected_time = len(agent.path) - 1
-        #         if expected_time >= step_iter and pc_np[x, y] == expected_time:
-        #             pc_np[x, y] = -1
-        #             agent_removed += 1
-        #             agent.my_permanent_constraint = None
-        #         else:
-        #             print(f"agent {agent.num} has this constraint: {agent.my_permanent_constraint}")
         if agent.my_permanent_constraint:
             x, y = agent.my_permanent_constraint
-            # Remove the constraint regardless of the stored value
-            # since this agent is being replanned
-            if pc_np[x, y] != -1:  # If there's any constraint here
+            if pc_np[x, y] != -1:
                 pc_np[x, y] = -1
                 agent_removed += 1
-                #print(f"  Removed PC constraint at ({x},{y}) for agent {agent.num}")
-            #else:
-                #print(f"  Agent {agent.num} has PC at ({x},{y}) but it's already cleared")
             agent.my_permanent_constraint = None
-        #print(f"  Agent {agent.num}: removed {agent_removed} tracked constraints")
         total_removed += agent_removed
 
-    #print(f"  Total removed: {total_removed}")
 
 def initialize_agent_constraint_tracking(agents: List[AgentAlg]):
     """

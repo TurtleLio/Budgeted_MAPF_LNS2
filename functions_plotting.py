@@ -1,13 +1,6 @@
 from globals import *
 
 
-# -------------------------------------------------------------------------------------------------------------------- #
-# -------------------------------------------------------------------------------------------------------------------- #
-# -------------------------------------------------------------------------------------------------------------------- #
-# PLOT FUNCS
-# -------------------------------------------------------------------------------------------------------------------- #
-# -------------------------------------------------------------------------------------------------------------------- #
-# -------------------------------------------------------------------------------------------------------------------- #
 
 
 def get_marker_line(alg_name: str):
@@ -26,7 +19,6 @@ def get_marker_line(alg_name: str):
         marker_line += '2'
     elif alg_name in ['CGA-MAPF', 'MACGA']:
         marker_line += 'X'
-    #     marker_line += 'd'
     elif 'CGA(L)' == alg_name:
         marker_line += 'X'
     elif alg_name in ['CGA+PIBT', 'MACGA+PIBT']:
@@ -73,65 +65,16 @@ def set_plot_title(ax, title, size=9):
 
 def set_legend(ax, framealpha=None, size=9):
     to_put_legend = True
-    # to_put_legend = False
     if to_put_legend:
         if not framealpha:
             framealpha = 0
         legend_properties = {'weight': 'bold', 'size': size}
-        # legend_properties = {}
         if framealpha is not None:
             ax.legend(prop=legend_properties, framealpha=framealpha)
         else:
             ax.legend(prop=legend_properties)
 
 
-# def plot_step_in_env(ax, info):
-#     ax.cla()
-#     # nodes = info['nodes']
-#     # a_name = info['i_agent'].name if 'i_agent' in info else 'agent_0'
-#     img_np = info['img_np']
-#     agents = info['agents']
-#
-#     field = img_np * -1
-#     ax.imshow(field, origin='lower', cmap='binary')
-#
-#     others_y_list, others_x_list, others_cm_list, alpha_list = [], [], [], []
-#     for agent in agents:
-#         if 'i_agent' in info and info['i_agent'] == agent:
-#             continue
-#         curr_node = agent.curr_node
-#         others_y_list.append(curr_node.y)
-#         others_x_list.append(curr_node.x)
-#         others_cm_list.append(get_color(agent.num))
-#         if agent.curr_node == agent.get_goal_node():
-#             alpha_list.append(0.2)
-#         else:
-#             alpha_list.append(1)
-#     ax.scatter(others_y_list, others_x_list, s=100, c='k', alpha=alpha_list)
-#     ax.scatter(others_y_list, others_x_list, s=50, c=np.array(others_cm_list), alpha=alpha_list)
-#     # ax.scatter(others_y_list, others_x_list, s=50, c='yellow')
-#
-#     if 'i_agent' in info:
-#         i_agent: AgentAlg = info['i_agent']
-#         curr_node = i_agent.curr_node
-#         next_goal_node = i_agent.get_goal_node()
-#         ax.scatter([curr_node.y], [curr_node.x], s=200, c='k')
-#         ax.scatter([curr_node.y], [curr_node.x], s=100, c='r')
-#         ax.scatter([next_goal_node.y], [next_goal_node.x], s=400, c='white', marker='X', alpha=0.4)
-#         ax.scatter([next_goal_node.y], [next_goal_node.x], s=200, c='red', marker='X', alpha=0.4)
-#
-#     title_str = 'plot_step_in_env\n'
-#     if 'to_title' in info:
-#         to_title = info['to_title']
-#         title_str += f'{to_title}\n '
-#     if 'img_dir' in info:
-#         img_dir = info['img_dir']
-#         title_str += f'Map: {img_dir[:-4]}\n '
-#     if 'i' in info:
-#         i = info['i']
-#         title_str += f'(iteration: {i + 1})\n'
-#     title_str += f'{len(agents)} agents '
-#     ax.set_title(title_str)
 def plot_step_in_env(ax, info):
     ax.cla()
     img_np = info['img_np']
@@ -143,7 +86,7 @@ def plot_step_in_env(ax, info):
     others_y_list, others_x_list, others_cm_list, alpha_list = [], [], [], []
     for agent in agents:
         if 'i_agent' in info and info['i_agent'] == agent:
-            continue  # Skip main agent for now
+            continue
         curr_node = agent.curr_node
         others_y_list.append(curr_node.y)
         others_x_list.append(curr_node.x)
@@ -158,11 +101,9 @@ def plot_step_in_env(ax, info):
         curr_node = i_agent.curr_node
         next_goal_node = i_agent.get_goal_node()
 
-        # Make the main agent larger and bolder
         ax.scatter([curr_node.y], [curr_node.x], s=300, c='gold', edgecolors='black', linewidths=2, marker='o', label='Tracked Agent')
         ax.scatter([curr_node.y], [curr_node.x], s=150, c='red', marker='o')
 
-        # Highlight goal with an extra large marker
         ax.scatter([next_goal_node.y], [next_goal_node.x], s=500, c='white', marker='X', alpha=0.6, edgecolors='black', linewidths=1.5)
         ax.scatter([next_goal_node.y], [next_goal_node.x], s=300, c='red', marker='X', alpha=0.6)
 
@@ -193,14 +134,11 @@ def plot_sr(ax, info):
                 x_list.append(n_a)
         ax.plot(x_list, sr_list, get_marker_line(alg_name), color=get_alg_color(alg_name),
                 alpha=0.5, label=f'{alg_name}', linewidth=5, markersize=20)
-    # ax.set_xlim([min(n_agents_list) - 20, max(n_agents_list) + 20])
     ax.set_xlim([min(n_agents_list), max(n_agents_list)])
     ax.set_ylim([0, 1 + 0.1])
     ax.set_xticks(n_agents_list)
     ax.set_xlabel('N agents', fontsize=27)
     ax.set_ylabel('Success Rate', fontsize=27)
-    # ax.set_title(f'{img_dir[:-4]} Map | time limit: {time_to_think_limit} sec.')
-    # set_plot_title(ax, f'{img_dir[:-4]} Map | time limit: {time_to_think_limit} sec.', size=11)
     set_plot_title(ax, f'{img_dir[:-4]}', size=30)
     set_legend(ax, size=24)
     labelsize = 20
@@ -217,7 +155,6 @@ def plot_time_metric(ax, info):
     img_dir = info['img_dir']
     max_time = info['max_time']
 
-    # x_list = n_agents_list[:4]
     x_list = n_agents_list
     for alg_name in alg_names:
         soc_list = []
@@ -230,12 +167,10 @@ def plot_time_metric(ax, info):
                 res_str += f'\t{n_a} - {soc_list[-1]: .2f}, '
         ax.plot(x_list_to_plot, soc_list, get_marker_line(alg_name), color=get_alg_color(alg_name),
                 alpha=0.5, label=f'{alg_name}', linewidth=5, markersize=20)
-        # print(f'{alg_name}\t\t\t: {res_str}')
     ax.set_xlim([min(x_list) - 20, max(x_list) + 20])
     ax.set_xticks(x_list)
     ax.set_xlabel('N agents', fontsize=27)
     ax.set_ylabel('Runtime', fontsize=27)
-    # ax.set_title(f'{img_dir[:-4]} Map | time limit: {time_to_think_limit} sec.')
     set_plot_title(ax, f'{img_dir[:-4]}', size=30)
     labelsize = 20
     ax.xaxis.set_tick_params(labelsize=labelsize)
@@ -250,26 +185,18 @@ def plot_time_metric_cactus(ax, info):
     img_dir = info['img_dir']
     max_time = info['max_time']
 
-    # x_list = n_agents_list[:4]
     x_list = n_agents_list
     for alg_name in alg_names:
         rt_list = []
-        # res_str = ''
         for n_a in x_list:
             rt_list.extend(info[alg_name][f'{n_a}']['time'])
-            # res_str += f'\t{n_a} - {rt_list[-1]: .2f}, '
         rt_list.sort()
         ax.plot(rt_list, get_marker_line(alg_name), color=get_alg_color(alg_name),
                 alpha=0.5, label=f'{alg_name}', linewidth=2, markersize=10)
-        # print(f'{i_alg}\t\t\t: {res_str}')
-    # ax.set_xlim([min(x_list) - 20, max(x_list) + 20])
-    # ax.set_xticks(x_list)
     ax.set_xlabel('Solved Instances', fontsize=15)
     ax.set_ylabel('Runtime', fontsize=15)
-    # ax.set_title(f'{img_dir[:-4]} Map | time limit: {time_to_think_limit} sec.')
     set_plot_title(ax, f'{img_dir[:-4]} Map | time limit: {max_time} sec.',
                    size=11)
-    # set_legend(ax, size=12)
 
 
 def plot_soc(ax, info):
@@ -294,12 +221,10 @@ def plot_soc(ax, info):
     ax.set_xticks(n_agents_list)
     ax.set_xlabel('N agents', fontsize=27)
     ax.set_ylabel('SoC', fontsize=27)
-    # ax.set_title(f'{img_dir[:-4]} Map | time limit: {time_to_think_limit} sec.')
     set_plot_title(ax, f'{img_dir[:-4]}', size=30)
     labelsize = 20
     ax.xaxis.set_tick_params(labelsize=labelsize)
     ax.yaxis.set_tick_params(labelsize=labelsize)
-    # set_legend(ax, size=23)
 
 
 def plot_soc_cactus(ax, info):
@@ -311,25 +236,18 @@ def plot_soc_cactus(ax, info):
 
     for alg_name in alg_names:
         y_list = []
-        # res_str = ''
         for n_a in n_agents_list:
             y_list.extend(info[alg_name][f'{n_a}']['soc'])
-            # res_str += f'\t{n_a} - {y_list[-1]: .2f}, '
         y_list.sort()
         ax.plot(y_list, get_marker_line(alg_name), color=get_alg_color(alg_name),
                 alpha=0.5, label=f'{alg_name}', linewidth=5, markersize=20)
-        # print(f'{i_alg}\t\t\t: {res_str}')
-    # ax.set_xlim([min(x_list) - 20, max(x_list) + 20])
-    # ax.set_xticks(x_list)
     ax.set_xlabel('Solved Instances', fontsize=27)
     ax.set_ylabel('SoC', fontsize=27)
-    # ax.set_title(f'{img_dir[:-4]} Map | time limit: {time_to_think_limit} sec.')
     set_plot_title(ax, f'{img_dir[:-4]}',
                    size=30)
     labelsize = 20
     ax.xaxis.set_tick_params(labelsize=labelsize)
     ax.yaxis.set_tick_params(labelsize=labelsize)
-    # set_legend(ax, size=23)
 
 
 def plot_makespan(ax, info):
@@ -348,16 +266,12 @@ def plot_makespan(ax, info):
                 makespan_list.append(np.mean(info[alg_name][f'{n_a}']['makespan']))
         ax.plot(x_list_to_plot, makespan_list, get_marker_line(alg_name), color=get_alg_color(alg_name),
                 alpha=0.5, label=f'{alg_name}', linewidth=10, markersize=20)
-    # ax.set_xlim([min(n_agents_list) - 20, max(n_agents_list) + 20])
-    # ax.set_xticks(n_agents_list)
     ax.set_xlabel('N agents', fontsize=27)
     ax.set_ylabel('Makespan', fontsize=27)
-    # ax.set_title(f'{img_dir[:-4]} Map | time limit: {time_to_think_limit} sec.')
     set_plot_title(ax, f'{img_dir[:-4]}', size=30)
     labelsize = 20
     ax.xaxis.set_tick_params(labelsize=labelsize)
     ax.yaxis.set_tick_params(labelsize=labelsize)
-    # set_legend(ax, size=23)
 
 
 def plot_makespan_cactus(ax, info):
@@ -369,24 +283,17 @@ def plot_makespan_cactus(ax, info):
 
     for alg_name in alg_names:
         y_list = []
-        # res_str = ''
         for n_a in n_agents_list:
             y_list.extend(info[alg_name][f'{n_a}']['makespan'])
-            # res_str += f'\t{n_a} - {y_list[-1]: .2f}, '
         y_list.sort()
         ax.plot(y_list, get_marker_line(alg_name), color=get_alg_color(alg_name),
                 alpha=0.5, label=f'{alg_name}', linewidth=15, markersize=15)
-        # print(f'{i_alg}\t\t\t: {res_str}')
-    # ax.set_xlim([min(x_list) - 20, max(x_list) + 20])
-    # ax.set_xticks(x_list)
     ax.set_xlabel('Solved Instances', fontsize=27)
     ax.set_ylabel('Makespan', fontsize=27)
-    # ax.set_title(f'{img_dir[:-4]} Map | time limit: {time_to_think_limit} sec.')
     set_plot_title(ax, f'{img_dir[:-4]}', size=30)
     labelsize = 20
     ax.xaxis.set_tick_params(labelsize=labelsize)
     ax.yaxis.set_tick_params(labelsize=labelsize)
-    # set_legend(ax, size=23)
 
 
 def plot_throughput(ax, info):
@@ -406,6 +313,5 @@ def plot_throughput(ax, info):
     ax.set_xticks(n_agents_list)
     ax.set_xlabel('N agents', fontsize=15)
     ax.set_ylabel('Throughput', fontsize=15)
-    # ax.set_title(f'{img_dir[:-4]} Map | time limit: {time_to_think_limit} sec.')
     set_plot_title(ax, f'{img_dir[:-4]} Map | n_steps: {n_steps}', size=10)
     set_legend(ax, size=12)

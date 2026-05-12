@@ -12,7 +12,7 @@ def run_sipps_insert_node(
         goal_np: np.ndarray,
         T: int,
         T_tag: int,
-        ec_soft_np: np.ndarray,  # x, y, x, y, t -> bool (0/1)
+        ec_soft_np: np.ndarray,
         si_table: Dict[str, List[Tuple[int, int, str]]],
         agent=None,
 ) -> None:
@@ -54,12 +54,11 @@ def run_sipps_expand_node(
         goal_np: np.ndarray,
         T: int,
         T_tag: int,
-        ec_hard_np: np.ndarray,  # x, y, x, y, t -> bool (0/1)
-        ec_soft_np: np.ndarray,  # x, y, x, y, t -> bool (0/1)
+        ec_hard_np: np.ndarray,
+        ec_soft_np: np.ndarray,
         agent=None
 ):
     I_group: List[Tuple[Node, int]] = get_I_group(node, nodes_dict, si_table, agent)
-    # I_group_names = [(v.xy_name, i, si_table[v.xy_name][i]) for v, i in I_group]
     for v_node, si_id in I_group:
         init_low, init_high, init_type = si_table[v_node.xy_name][si_id]
         new_low = get_low_without_hard_ec(node, node.n, v_node, init_low, init_high, ec_hard_np, agent)
@@ -82,14 +81,14 @@ def run_sipps(
         nodes: List[Node],
         nodes_dict: Dict[str, Node],
         h_dict: Dict[str, np.ndarray],
-        vc_hard_np: np.ndarray | None,  # x, y, t -> bool (0/1)
-        ec_hard_np: np.ndarray | None,  # x, y, x, y, t -> bool (0/1)
-        pc_hard_np: np.ndarray | None,  # x, y -> time (int)
-        vc_soft_np: np.ndarray | None,  # x, y, t -> bool (0/1)
-        ec_soft_np: np.ndarray | None,  # x, y, x, y, t -> bool (0/1)
-        pc_soft_np: np.ndarray | None,  # x, y -> time (int)
-        resources,  # The class that contains the limit of the nodes
-        max_depth: int,  # Limit on the depth of the search
+        vc_hard_np: np.ndarray | None,
+        ec_hard_np: np.ndarray | None,
+        pc_hard_np: np.ndarray | None,
+        vc_soft_np: np.ndarray | None,
+        ec_soft_np: np.ndarray | None,
+        pc_soft_np: np.ndarray | None,
+        resources,
+        max_depth: int,
         max_final_time: int = int(1e10),
         flag_k_limit: bool = False,
         k_limit: int = int(1e10),
@@ -105,9 +104,6 @@ def run_sipps(
         return None, {}
 
     root = SIPPSNode(start_node, si_table[start_node.xy_name][0], 0, False)
-    # goal_vc_times_list = get_vc_list(goal_node, vc_hard_np)
-    # if len(goal_vc_times_list) > 0:
-    #     T = max(goal_vc_times_list) + 1
     T_tag = get_T_tag(goal_node, si_table)
     goal_np: np.ndarray = h_dict[goal_node.xy_name]
     compute_c_g_h_f_values(root, goal_node, goal_np, T, T_tag, ec_soft_np, si_table)
@@ -122,7 +118,6 @@ def run_sipps(
     ident_dict[root.ident_str].append(root)
 
     while len(Q) > 0 and (resources.resource_subtraction(agent.num) if is_neighborhood == False else resources.neib_resource_subtraction(agent.num)):
-        # print(f'\r{len(Q)=}, {len(P)=}', end='')
         next_n: SIPPSNode = heapq.heappop(Q)
         Q_set.discard(next_n)
         if next_n.is_goal or next_n.low >= k_limit:
@@ -136,7 +131,6 @@ def run_sipps(
             c_future = get_c_future(goal_node, next_n.low, si_table)
             if c_future == 0:
                 nodes_path, sipps_path = extract_path(next_n, agent=agent)
-                # nodes_path_names = [n.xy_name for n in nodes_path]
                 sipps_path_names = [n.to_print() for n in sipps_path]
                 return nodes_path, {
                     'T': T, 'T_tag': T_tag, 'Q': Q, 'P': P, 'si_table': si_table, 'r_type': 'c_future=0',
@@ -152,31 +146,16 @@ def run_sipps(
         P_set.add(next_n)
         ident_dict[next_n.ident_str].append(next_n)
     wait_path = [start_node] * (max_depth + 1)
-    # print(f"agent {agent.num} is waiting")
-    # update_constraints(wait_path, vc_hard_np, ec_hard_np, pc_hard_np)
-    # print(f"returning wait path because no more resources for agent {agent.num}")
     return wait_path, {'T': T, 'T_tag': T_tag, 'Q': Q, 'P': P, 'si_table': si_table,}
-    # return None, {
-    #                 'T': T, 'T_tag': T_tag, 'Q': Q, 'P': P, 'si_table': si_table,
-    #             }
 
 
 @use_profiler(save_dir='../stats/alg_sipps.pstat')
 def main():
-    # set_seed(random_seed_bool=False, seed=7310)
-    # set_seed(random_seed_bool=False, seed=123)
     set_seed(random_seed_bool=True)
 
-    # img_dir = '10_10_my_rand.map'
     img_dir = 'empty-32-32.map'
-    # img_dir = 'random-32-32-10.map'
-    # img_dir = 'random-32-32-20.map'
-    # img_dir = 'room-32-32-4.map'
-    # img_dir = 'maze-32-32-2.map'
-    # img_dir = 'maze-32-32-4.map'
 
     to_render: bool = True
-    # final_render: bool = False
 
     path_to_maps: str = '../maps'
     path_to_heuristics: str = '../logs_for_heuristics'
@@ -196,12 +175,6 @@ def main():
     path2 = [
         nodes_dict['6_0'],
         nodes_dict['6_0'],
-        # nodes_dict['6_0'],
-        # nodes_dict['6_0'],
-        # nodes_dict['6_1'],
-        # nodes_dict['6_1'],
-        # nodes_dict['6_1'],
-        # nodes_dict['6_0'],
     ]
     h_paths = [path1, path2]
     max_path_len = max(map(lambda x: len(x), h_paths))
@@ -225,22 +198,17 @@ def main():
         vc_hard_np, ec_hard_np, pc_hard_np, vc_soft_np, ec_soft_np, pc_soft_np
     )
 
-    # plot
     if to_render:
         print(f'{[n.xy_name for n in result]}')
         plot_np = np.ones(img_np.shape) * -2
-        # nodes
         for n in nodes:
             plot_np[n.x, n.y] = 0
-        # hard
         for h_path in h_paths:
             for n in h_path:
                 plot_np[n.x, n.y] = -1
-        # soft
         for s_path in s_paths:
             for n in s_path:
                 plot_np[n.x, n.y] = -0.5
-        # result
         for n in result:
             plot_np[n.x, n.y] = 1
 
@@ -252,11 +220,4 @@ if __name__ == '__main__':
     main()
 
 
-# if vc_hard_np is not None and vc_soft_np is not None:
-#     assert vc_hard_np.shape[2] == vc_soft_np.shape[2]
-#     assert ec_hard_np.shape[4] == ec_soft_np.shape[4]
-    # assert int(max(np.max(pc_hard_np), np.max(pc_soft_np))) + 1 == vc_hard_np.shape[2]
-    # assert int(max(np.max(pc_hard_np), np.max(pc_soft_np))) + 1 == ec_hard_np.shape[4]
-# if pc_hard_np is not None:
-#     assert pc_hard_np[goal_node.x, goal_node.y] == -1
 

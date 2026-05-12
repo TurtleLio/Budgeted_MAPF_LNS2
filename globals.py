@@ -16,17 +16,9 @@ from collections import deque, defaultdict
 import numpy as np
 import matplotlib.pyplot as plt
 
-# -------------------------------------------------------------------------------------------------------------------- #
-# -------------------------------------------------------------------------------------------------------------------- #
-# -------------------------------------------------------------------------------------------------------------------- #
-# GLOBAL OBJECTS
-# -------------------------------------------------------------------------------------------------------------------- #
-# -------------------------------------------------------------------------------------------------------------------- #
-# -------------------------------------------------------------------------------------------------------------------- #
 
 color_names = [
-    # 'b', 'g', 'r', 'c', 'm', 'y', 'k', 'w',  # Single-letter abbreviations
-    'blue', 'green', 'red', 'cyan', 'magenta', 'yellow', 'black',  # Full names
+    'blue', 'green', 'red', 'cyan', 'magenta', 'yellow', 'black',
     'aliceblue', 'antiquewhite', 'aqua', 'aquamarine', 'azure', 'beige', 'black',
     'blanchedalmond', 'blue', 'blueviolet', 'brown', 'burlywood', 'cadetblue', 'chartreuse', 'chocolate',
     'coral', 'cornflowerblue', 'cornsilk', 'crimson', 'cyan', 'darkblue', 'darkcyan', 'darkgoldenrod',
@@ -48,61 +40,42 @@ color_names = [
 ]
 
 markers = [
-    ".",    # point marker
-    ",",    # pixel marker
-    "o",    # circle marker
-    "v",    # triangle_down marker
-    "^",    # triangle_up marker
-    "<",    # triangle_left marker
-    ">",    # triangle_right marker
-    "1",    # tri_down marker
-    "2",    # tri_up marker
-    "3",    # tri_left marker
-    "4",    # tri_right marker
-    "s",    # square marker
-    "p",    # pentagon marker
-    "*",    # star marker
-    "h",    # hexagon1 marker
-    "H",    # hexagon2 marker
-    "+",    # plus marker
-    "x",    # x marker
-    "D",    # diamond marker
-    "d",    # thin_diamond marker
-    "P",    # plus (filled) marker
-    "X",    # x (filled) marker
+    ".",
+    ",",
+    "o",
+    "v",
+    "^",
+    "<",
+    ">",
+    "1",
+    "2",
+    "3",
+    "4",
+    "s",
+    "p",
+    "*",
+    "h",
+    "H",
+    "+",
+    "x",
+    "D",
+    "d",
+    "P",
+    "X",
 ]
 lines = [
-    "-",  # solid line
-    "--", # dashed line
-    "-.", # dash-dot line
-    ":",  # dotted line
+    "-",
+    "--",
+    "-.",
+    ":",
 ]
 
 markers_iter = iter(markers)
-# markers_lines_dict = defaultdict(lambda: random.choice(markers))
 markers_lines_dict = {}
 colors_dict: DefaultDict[str, str | None] = defaultdict(lambda: None)
 
 
-# markers_lines_dict['LNS2'] = '-p'
-# colors_dict['LNS2'] = 'blue'
-#
-# markers_lines_dict['PF-LNS2'] = '-*'
-# colors_dict['PF-LNS2'] = 'red'
-#
-# markers_lines_dict['PrP'] = '-v'
-# colors_dict['PrP'] = 'green'
-#
-# markers_lines_dict['PF-PrP'] = '-^'
-# colors_dict['PF-PrP'] = 'orange'
 
-# -------------------------------------------------------------------------------------------------------------------- #
-# -------------------------------------------------------------------------------------------------------------------- #
-# -------------------------------------------------------------------------------------------------------------------- #
-# GLOBAL CLASSES
-# -------------------------------------------------------------------------------------------------------------------- #
-# -------------------------------------------------------------------------------------------------------------------- #
-# -------------------------------------------------------------------------------------------------------------------- #
 class Node:
     def __init__(self, x: int, y: int, neighbours: List[str] | None = None):
         self.x: int = x
@@ -110,7 +83,6 @@ class Node:
         self.neighbours: List[str] = [] if neighbours is None else neighbours
         self.neighbours_nodes: List[Node] = []
         self.xy_name: str = f'{self.x}_{self.y}'
-        #--------- new -------
         self._id: int | None = None
         self.heuristic_cache: Dict[str,int] = {}
 
@@ -135,7 +107,6 @@ class Node:
 
     def __repr__(self):
         return self.xy_name
-    #------------ new ---------
     @property
     def id(self) -> int:
         """Fast integer ID - works for maps up to 1000x1000"""
@@ -157,7 +128,6 @@ class AgentAlg:
         self.start_node: Node = start_node
         self.start_node_name: str = self.start_node.xy_name
         self.curr_node: Node = start_node
-        # self.curr_node_name: str = self.curr_node.xy_name
         self.goal_node: Node | None = goal_node
         self.goal_node_name: str = self.goal_node.xy_name
         self.alt_goal_node: Node | None = None
@@ -172,9 +142,9 @@ class AgentAlg:
         self.starting_conflicts: int = 0
         self.current_path_length: int = 0
         self.k_path_delay: int = 0
-        self.my_vertex_constraints: List[Tuple[int, int, int]] = []  # (x, y, t)
-        self.my_edge_constraints: List[Tuple[int, int, int, int, int]] = []  # (x1, y1, x2, y2, t)
-        self.my_permanent_constraint: Tuple[int, int] | None = None  # (x, y)
+        self.my_vertex_constraints: List[Tuple[int, int, int]] = []
+        self.my_edge_constraints: List[Tuple[int, int, int, int, int]] = []
+        self.my_permanent_constraint: Tuple[int, int] | None = None
 
 
     @property
@@ -209,39 +179,9 @@ class AgentAlg:
     def __eq__(self, other):
         return self.num == other.num
 
-# class resource_distribution:
-#     def __init__(self, max_nodes_for_agents: np.ndarray):
-#         self.max_nodes = max_nodes_for_agents
-# class resource_distribution:
-#     def __init__(self, resources_per_agent: np.ndarray, num_agents: int, share_fun_name):
-#         distrubated_resources = self.share_fun_name()
-#         self.max_nodes = distrubated_resources
-#         self.string_share_fun_ = str(share_fun_name)
-#
-#     def fixed_distribution(self):
-#         # distributed_array = np.zeros(num_agents)
-#         # total_amount = resources_per_agent*num_agents
-#         # for i in range(num_agents):
-#         #     distributed_array[i] = total_amount/num_agents
-#         # return np.array(distributed_array)
-#         total_amount = np.array([self.resources_per_agent] * self.num_agents)
-#         return total_amount
-#
-#     def shared_distribution(self):
-#         total_amount = np.array([self.resources_per_agent * self.num_agents] * self.num_agents)
-#         return total_amount
-#
-#     def PIB_distribution(self):
-#         precentage_of_shared_pool = 50
-#         total_amount = self.resources_per_agent * self.num_agents
-#         shared_pool = total_amount * precentage_of_shared_pool / 100
-#         total_amount = np.array([self.resources_per_agent - int(shared_pool / self.num_agents)] * self.num_agents)
-#         total_amount = np.append(total_amount, shared_pool)
-#         return total_amount
 def create_resource_class(base_distribution_class, neib_resources, neib_agents_distribution, class_name=None):
     if class_name is None:
         class_name = f"{base_distribution_class.distribution_name}-{neib_resources.neib_budget_name}-{neib_agents_distribution.neib_agents_name}"
-    # Create a new class dynamically
     return type(class_name, (base_distribution_class,) + (neib_resources,) + (neib_agents_distribution,), {'class_name': class_name})
 
 class resource_distribution_class:
@@ -272,7 +212,6 @@ class resource_distribution_class:
         self.proportions = np.array([])
         resource_sum = 0
         for i, nodes_left in enumerate(self.max_nodes):
-            # self.proportions.append(nodes_left)
             self.proportions= np.append(self.proportions, nodes_left)
             resource_sum += nodes_left
             self.max_nodes[i] = 0
@@ -304,14 +243,9 @@ class fixed_distribution(resource_distribution_class):
         index = mixed_agents_list.index(agent)
         if index < (len(mixed_agents_list) - 1):
             next_agent = mixed_agents_list[index+1]
-            # number_part_next_agent = next_agent.split("_")[1]
-            # real_index_next_agent = int(number_part_next_agent)
             self.max_nodes[next_agent.num] += self.max_nodes[agent.num]
             self.max_nodes[agent.num] = 0
-        #print(f"max_nodes = {self.max_nodes}")
         return None
-    # def resource_forward(self, agent, mixed_agents_list):
-    #     return None
 
 class shared_distribution(resource_distribution_class):
     distribution_name = 'shared'
@@ -330,10 +264,8 @@ class shared_distribution(resource_distribution_class):
         return total_amount
     def resource_subtraction(self, index):
         if self.max_nodes[-1] <= 0:
-            # print(f'not enough resources for agent {index}')
             return False
         self.max_nodes[-1] -= 1
-        #print(f"resource left: {self.max_nodes[-1]}")
         return True
     def resource_forward(self, agent, mixed_agents_list):
         return None
@@ -359,13 +291,11 @@ class PIB_distribution(resource_distribution_class):
         return total_amount
     def resource_subtraction(self, index):
         if self.max_nodes[-1] <= 0:
-            #print(f'not enough resources for agent {index}')
             return False
         if self.max_nodes[index] != 0:
             self.max_nodes[index] -= 1
         else:
             self.max_nodes[-1] -= 1
-            #print(f"agent index {index} took from shared pool | {self.max_nodes[-1]} left")
         return True
 
 
@@ -375,7 +305,6 @@ class neib_resources:
         pass
 
 class neib_sum(neib_resources):
-    # neib_budget_name = "neighbourhood-sum"
     neib_budget_name = "Sum"
     def neib_pool(self, neib_agents:[AgentAlg], fixed_neib_nodes: int=50, cp_graph: dict=[str, List[AgentAlg]], prefix: int = 5, pid: List[int] = [0,0,0]):
         self.agent_subset = neib_agents
@@ -386,102 +315,47 @@ class neib_sum(neib_resources):
             total_amount = self.max_nodes[-1]
         self.neib_budget = total_amount
         self.max_nodes[-1] -= self.neib_budget
-        #self.proportions = tuple(self.proportions)
-        # print(f"this batch proportions: {np.array([self.proportions[agent.num] for agent in self.agent_subset])}")
-        # print(f"total neighborhood budget {self.neib_budget} | left in bank: {self.max_nodes[-1]}")
         return self.neib_budget
 
 class neib_proportions(neib_resources):
     neib_budget_name = "neighbourhood-proportions"
     def neib_pool(self, neib_agents:[AgentAlg], fixed_neib_nodes: int=50, cp_graph: dict=[str, List[AgentAlg]], prefix: int = 5, pid: List[int] = [0,0,0]):
         self.agent_subset = neib_agents
-        #self.proportions = np.array(self.proportions)
-        # if sum(self.proportions) == sum(self.max_nodes):
-        #     self.proportions = [0]*self.num_agents
-        #     sum_proportions = 0
-        #     for agent, connections in cp_graph.items():
-        #         agent_id = int(agent.split('_')[1])  # Extract the agent number (e.g., 55 from 'agent_55')
-        #         #if len(connections) > 0:
-        #         if len(connections) > 0 and len(connections) is not None:
-        #             self.proportions[agent_id] = len(connections)
-        #             sum_proportions += len(connections)
-        #         else:
-        #             #sum_proportions = 1
-        #             #self.proportions[agent_id] = sum_proportions
-        #             self.proportions[agent_id] = 0.01
-        #     self.proportions = tuple(self.proportions)
         self.proportions = [0]*self.num_agents
         sum_proportions = 0
         for agent, connections in cp_graph.items():
-            agent_id = int(agent.split('_')[1])  # Extract the agent number (e.g., 55 from 'agent_55')
-            #if len(connections) > 0:
+            agent_id = int(agent.split('_')[1])
             if len(connections) > 0 and len(connections) is not None:
                 self.proportions[agent_id] = len(connections)
                 sum_proportions += len(connections)
             else:
-                #sum_proportions = 1
-                #self.proportions[agent_id] = sum_proportions
                 self.proportions[agent_id] = 0.01
         self.proportions = tuple(self.proportions)
-        # agents_index_arr = []
-        # for agent in self.agent_subset:
-        #     agents_index_arr.append(agent.num)
         for agent in neib_agents:
-            #print(f"self.max_nodes[-1]:{self.max_nodes[-1]} | self.proportions[agent_num:{self.proportions[agent.num]} | sum_proportions:{sum(self.proportions)}")
             self.neib_budget += int(self.max_nodes[-1]*self.proportions[agent.num]/sum(self.proportions))
-            #print(f"after math: {int(self.max_nodes[-1]*self.proportions[agent.num]/sum(self.proportions))}")
         if self.neib_budget <= len(self.agent_subset):
             self.neib_budget = len(self.agent_subset)
         if self.neib_budget > self.max_nodes[-1]:
             self.neib_budget = self.max_nodes[-1]
         self.max_nodes[-1] -= self.neib_budget
-        #print(f"total amount for this batch:{self.neib_budget}")
-        #print(f"this batch proportions: {np.array([self.proportions[agent.num] for agent in self.agent_subset])}")
-        #print(f"resources in subset:{np.array([self.max_nodes[agent.num] for agent in neib_agents])} for agents:{np.array([agent.num for agent in neib_agents])}")
         return self.neib_budget
 
 class neib_proportions_with_prefix(neib_resources):
     neib_budget_name = "Conflict-Proportional-Budget"
     def neib_pool(self, neib_agents:[AgentAlg], fixed_neib_nodes: int=50, cp_graph: dict=[str, List[AgentAlg]], prefix: int = 5, pid: List[int] = [0,0,0]):
         self.agent_subset = neib_agents
-        #self.proportions = np.array(self.proportions)
-        # if sum(self.proportions) == sum(self.max_nodes):
-        #     self.proportions = [0]*self.num_agents
-        #     sum_proportions = 0
-        #     for agent, connections in cp_graph.items():
-        #         agent_id = int(agent.split('_')[1])  # Extract the agent number (e.g., 55 from 'agent_55')
-        #         #if len(connections) > 0:
-        #         if len(connections) > 0 and len(connections) is not None:
-        #             self.proportions[agent_id] = len(connections)
-        #             sum_proportions += len(connections)
-        #         else:
-        #             #sum_proportions = 1
-        #             #self.proportions[agent_id] = sum_proportions
-        #             self.proportions[agent_id] = 0.01
-        #     self.proportions = tuple(self.proportions)
         prefix_sub_limit = prefix*10
         self.proportions = [0]*self.num_agents
         sum_proportions = 0
         for agent, connections in cp_graph.items():
-            agent_id = int(agent.split('_')[1])  # Extract the agent number (e.g., 55 from 'agent_55')
-            #if len(connections) > 0:
+            agent_id = int(agent.split('_')[1])
             if len(connections) > 0 and len(connections) is not None:
                 self.proportions[agent_id] = len(connections)
                 sum_proportions += len(connections)
             else:
-                #sum_proportions = 1
-                #self.proportions[agent_id] = sum_proportions
                 self.proportions[agent_id] = 0.01
-        #self.proportions = tuple(self.proportions)
-        # print(f"proportions: {sum(self.proportions)}")
-        # print(f"agent's proportion:{np.array([self.proportions[agent.num] for agent in neib_agents])}")
-        # agents_index_arr = []
-        # for agent in self.agent_subset:
-        #     agents_index_arr.append(agent.num)
         for agent in neib_agents:
-            #print(f"self.max_nodes[-1]:{self.max_nodes[-1]} | self.proportions[agent_num:{self.proportions[agent.num]} | sum_proportions:{sum(self.proportions)}")
             self.neib_budget += int(self.max_nodes[-1]*self.proportions[agent.num]/sum(self.proportions))
-            #print(f"after math: {int(self.max_nodes[-1]*self.proportions[agent.num]/sum(self.proportions))}")
         if self.neib_budget <= len(self.agent_subset):
             self.neib_budget = len(self.agent_subset)
         if self.neib_budget < prefix_sub_limit:
@@ -489,59 +363,26 @@ class neib_proportions_with_prefix(neib_resources):
         if self.neib_budget > self.max_nodes[-1]:
             self.neib_budget = self.max_nodes[-1]
         self.max_nodes[-1] -= self.neib_budget
-        # print(f"total amount for this batch:{self.neib_budget} / { self.max_nodes[-1]+self.neib_budget} | {self.neib_budget*100/(self.max_nodes[-1]+self.neib_budget):.2f}%")
-        # print(f"this batch proportions: {np.array([self.proportions[agent.num] for agent in self.agent_subset])} | total proportions:{sum(self.proportions)}")
-        # #print(f"left in bank: {self.max_nodes[-1]}")
-        #print(f"total amount for this batch:{self.neib_budget}")
-        #print(f"this batch proportions: {np.array([self.proportions[agent.num] for agent in self.agent_subset])}")
-        #print(f"resources in subset:{np.array([self.max_nodes[agent.num] for agent in neib_agents])} for agents:{np.array([agent.num for agent in neib_agents])}")
         return self.neib_budget
 
 class neib_proportions_with_prefix_reversed(neib_resources):
     neib_budget_name = "Reversed-Conflict-Proportional-Budget"
     def neib_pool(self, neib_agents:[AgentAlg], fixed_neib_nodes: int=50, cp_graph: dict=[str, List[AgentAlg]], prefix: int = 5, pid: List[int] = [0,0,0]):
         self.agent_subset = neib_agents
-        #self.proportions = np.array(self.proportions)
-        # if sum(self.proportions) == sum(self.max_nodes):
-        #     self.proportions = [0]*self.num_agents
-        #     sum_proportions = 0
-        #     for agent, connections in cp_graph.items():
-        #         agent_id = int(agent.split('_')[1])  # Extract the agent number (e.g., 55 from 'agent_55')
-        #         #if len(connections) > 0:
-        #         if len(connections) > 0 and len(connections) is not None:
-        #             self.proportions[agent_id] = len(connections)
-        #             sum_proportions += len(connections)
-        #         else:
-        #             #sum_proportions = 1
-        #             #self.proportions[agent_id] = sum_proportions
-        #             self.proportions[agent_id] = 0.01
-        #     self.proportions = tuple(self.proportions)
         prefix_sub_limit = prefix*10
         self.proportions = [0]*self.num_agents
         sum_proportions = 0
         for agent, connections in cp_graph.items():
-            agent_id = int(agent.split('_')[1])  # Extract the agent number (e.g., 55 from 'agent_55')
-            #if len(connections) > 0:
+            agent_id = int(agent.split('_')[1])
             if len(connections) > 0 and len(connections) is not None:
                 self.proportions[agent_id] = len(connections)
                 sum_proportions += len(connections)
             else:
-                #sum_proportions = 1
-                #self.proportions[agent_id] = sum_proportions
                 self.proportions[agent_id] = 0
-        # self.proportions = tuple(self.proportions)
-        # print(f"proportions: {sum(self.proportions)}")
-        # print(f"agent's proportion:{np.array([self.proportions[agent.num] for agent in neib_agents])}")
-        # agents_index_arr = []
-        # for agent in self.agent_subset:
-        #     agents_index_arr.append(agent.num)
         sum_reverse_proportions = sum(self.proportions)/2
         sum_conf_reverse = 0
         for agent in neib_agents:
-            #print(f"self.max_nodes[-1]:{self.max_nodes[-1]} | self.proportions[agent_num:{self.proportions[agent.num]} | sum_proportions:{sum(self.proportions)}")
-            # self.neib_budget += int(self.max_nodes[-1]*self.proportions[agent.num]/sum(self.proportions))
             sum_conf_reverse += sum_reverse_proportions - self.proportions[agent.num]
-            #print(f"after math: {int(self.max_nodes[-1]*self.proportions[agent.num]/sum(self.proportions))}")
         self.neib_budget =int(self.max_nodes[-1]*sum_conf_reverse / (sum_reverse_proportions*len(self.agent_subset)))
         if self.neib_budget <= len(self.agent_subset):
             self.neib_budget = len(self.agent_subset)
@@ -550,10 +391,6 @@ class neib_proportions_with_prefix_reversed(neib_resources):
         if self.neib_budget > self.max_nodes[-1]:
             self.neib_budget = self.max_nodes[-1]
         self.max_nodes[-1] -= self.neib_budget
-        # print(f"left in bank: {self.max_nodes[-1]}")
-        # print(f"total amount for this batch:{self.neib_budget} / { self.max_nodes[-1]+self.neib_budget} | {self.neib_budget*100/(self.max_nodes[-1]+self.neib_budget):.2f}%")
-        # print(f"this batch proportions: {np.array([self.proportions[agent.num] for agent in self.agent_subset])} | total proportions:{sum_reverse_proportions}")
-        # # print(f"agents subset:{np.array([agent.num for agent in neib_agents])}")
         return self.neib_budget
 
 class neib_distance_proportions(neib_resources):
@@ -564,23 +401,16 @@ class neib_distance_proportions(neib_resources):
         sum_proportion = 0
         for agent in neib_agents:
             sum_proportion += self.agent_distances[agent.num]['normalized']
-            #print(f"self.max_nodes[-1]:{self.max_nodes[-1]} | self.proportions[agent_num:{self.proportions[agent.num]} | sum_proportions:{sum(self.proportions)}")
-            #print(f"after math: {int(self.max_nodes[-1]*self.proportions[agent.num]/sum(self.proportions))}")
         self.neib_budget = self.max_nodes[-1] * sum_proportion/len(self.agent_subset)
         if self.neib_budget < prefix_sub_limit:
             self.neib_budget = prefix_sub_limit
         if self.neib_budget > self.max_nodes[-1]:
             self.neib_budget = self.max_nodes[-1]
         self.max_nodes[-1] -= self.neib_budget
-        #print(f"left in bank: {self.max_nodes[-1]}")
-        #print(f"total amount for this batch:{self.neib_budget}")
-        #print(f"this batch proportions: {np.array([self.proportions[agent.num] for agent in self.agent_subset])}")
-        #print(f"resources in subset:{np.array([self.max_nodes[agent.num] for agent in neib_agents])} for agents:{np.array([agent.num for agent in neib_agents])}")
         return self.neib_budget
 
 class neib_multi_arm_bandit(neib_resources):
     neib_budget_name = "Multi-Arm-Bandit"
-    #weights= {'Shared':{'value':1, 'successes':0, 'expansions':0},'CPB':{'value':1, 'successes':0, 'expansions':0},'RCPB':{'value':1, 'successes':0, 'expansions':0},'PID':{'value':1, 'successes':0, 'expansions':0}}
     def neib_pool(self, neib_agents: [AgentAlg], fixed_neib_nodes: int = 50, cp_graph: dict = [str, List[AgentAlg]],
                   prefix: int = 5, pid: List[int] = [0, 0, 0]):
         self.agent_subset = neib_agents
@@ -619,7 +449,6 @@ class neib_random(neib_resources):
         return self.neib_budget
 
 class neib_fixed_50(neib_resources):
-    # neib_budget_name = "neighbourhood-fixed-50"
     neib_budget_name = "Fixed-50"
     def neib_pool(self, neib_agents:[AgentAlg], fixed_neib_nodes: int=50, cp_graph: dict=[str, List[AgentAlg]], prefix: int = 5,pid: List[int] = [0,0,0]):
         self.agent_subset = neib_agents
@@ -627,14 +456,9 @@ class neib_fixed_50(neib_resources):
             fixed_neib_nodes = self.max_nodes[-1]
         self.neib_budget = fixed_neib_nodes
         self.max_nodes[-1] -= self.neib_budget
-        # if self.neib_budget < len(self.agent_subset):
-        #     self.neib_budget = 0
-        #print(f"total amount for this batch:{total_amount}")
-        #print(f"resources in subset:{np.array([self.max_nodes[agent.num] for agent in neib_agents])} for agents:{np.array([agent.num for agent in neib_agents])}")
         return self.neib_budget
 
 class neib_fixed_100(neib_resources):
-    # neib_budget_name = "neighbourhood-fixed-100"
     neib_budget_name = "Fixed-100"
     def neib_pool(self, neib_agents: [AgentAlg], fixed_neib_nodes: int = 100,
                   cp_graph: dict = [str, List[AgentAlg]], prefix: int = 5, pid: List[int] = [0,0,0]):
@@ -643,10 +467,6 @@ class neib_fixed_100(neib_resources):
             fixed_neib_nodes = self.max_nodes[-1]
         self.neib_budget = fixed_neib_nodes
         self.max_nodes[-1] -= self.neib_budget
-        # if self.neib_budget < len(self.agent_subset):
-        #     self.neib_budget = 0
-        # print(f"total amount for this batch:{total_amount}")
-        # print(f"resources in subset:{np.array([self.max_nodes[agent.num] for agent in neib_agents])} for agents:{np.array([agent.num for agent in neib_agents])}")
         return self.neib_budget
 
 class neib_fixed_150(neib_resources):
@@ -659,10 +479,6 @@ class neib_fixed_150(neib_resources):
             fixed_neib_nodes = self.max_nodes[-1]
         self.neib_budget = fixed_neib_nodes
         self.max_nodes[-1] -= self.neib_budget
-        # if self.neib_budget < len(self.agent_subset):
-        #     self.neib_budget = 0
-        # print(f"total amount for this batch:{total_amount}")
-        # print(f"resources in subset:{np.array([self.max_nodes[agent.num] for agent in neib_agents])} for agents:{np.array([agent.num for agent in neib_agents])}")
         return self.neib_budget
 
 class neib_fixed_prefix(neib_resources):
@@ -673,7 +489,6 @@ class neib_fixed_prefix(neib_resources):
                   cp_graph: dict = [str, List[AgentAlg]], prefix: int =5, pid: List[int] = [0,0,0]):
         self.agent_subset = neib_agents
         try:
-            #self.fixed_amount = self.max_nodes[-1]/(len(self.cp_graph))
             self.fixed_amount = prefix*16
             self.fixed_amount = tuple(self.fixed_amount)
         except:
@@ -683,23 +498,14 @@ class neib_fixed_prefix(neib_resources):
         else:
             self.neib_budget = self.fixed_amount
         self.max_nodes[-1] -= self.neib_budget
-        # if self.neib_budget < len(self.agent_subset):
-        #     self.neib_budget = 0
-        # print(f"total amount for this batch:{total_amount}")
-        # print(f"resources in subset:{np.array([self.max_nodes[agent.num] for agent in neib_agents])} for agents:{np.array([agent.num for agent in neib_agents])}")
         return self.neib_budget
 
 class neib_shared(neib_resources):
-    # neib_budget_name = "neighbourhood-shared"
     neib_budget_name = "Shared"
     def neib_pool(self, neib_agents:[AgentAlg], fixed_neib_nodes: int=50, cp_graph: dict=[str, List[AgentAlg]],prefix: int = 5, pid: List[int] = [0,0,0]):
         self.agent_subset = neib_agents
         self.neib_budget = self.max_nodes[-1]
         self.max_nodes[-1] -= self.neib_budget
-        #print(f"total amount for this batch:{total_amount}")
-        #print(f"resources in subset:{np.array([self.max_nodes[agent.num] for agent in neib_agents])} for agents:{np.array([agent.num for agent in neib_agents])}")
-        # print(f"this batch proportions: {np.array([self.proportions[agent.num] for agent in self.agent_subset])}")
-        # print(f"total neighborhood budget {self.neib_budget} | left in bank: {self.max_nodes[-1]}")
         return self.neib_budget
 
 class neib_agents_distribution:
@@ -724,34 +530,21 @@ class neib_agents_shared(neib_agents_distribution):
         return np.array([self.max_nodes[agent.num] for agent in self.agent_subset])
     def neib_resource_subtraction(self, agent_num):
         index_list = []
-        #print(f"resources left: {self.neib_budget} | {self.max_nodes[-1]}")
         for agent in self.agent_subset:
             index_list.append(agent.num)
         for index in index_list:
             if self.max_nodes[index] > 0:
                 self.max_nodes[index] -= 1
-                #print(f"resources in subset:{np.array([self.max_nodes[agent.num] for agent in self.agent_subset])} for agents:{np.array([agent.num for agent in self.agent_subset])}")
                 return True
         return False
     def return_resources(self):
-       # print(
-            #f"Returning: resources in subset:{np.array([self.max_nodes[agent.num] for agent in self.agent_subset])} for agents:{np.array([agent.num for agent in self.agent_subset])}")
         returning_resources = sum(np.array([self.max_nodes[agent.num] for agent in self.agent_subset])) + self.neib_budget
-        # print(
-        #     f"Returning: resources:{returning_resources}")
         for agent in self.agent_subset:
             self.neib_budget += self.max_nodes[agent.num]
         for agent in self.agent_subset:
-            # try:
-            #     self.proportions[agent.num] = self.neib_budget/len(self.agent_subset)
-            #     # self.proportions[agent.num] = 1
-            # except TypeError:
-            #     pass
             self.max_nodes[agent.num] = 0
         self.max_nodes[-1] += self.neib_budget
-        #print(f"resources returned:{self.neib_budget}")
         self.neib_budget = 0
-        #print(f"remain:{self.max_nodes[-1]}")
         return returning_resources
 
 class neib_agents_evenly_split(neib_agents_distribution):
@@ -764,23 +557,15 @@ class neib_agents_evenly_split(neib_agents_distribution):
         self.neib_budget -= total_sum
         if total_sum <= 0:
             self.neib_budget = 0
-        #print(
-        #    f"proportions in subset:{np.array([self.proportions[agent.num] for agent in self.agent_subset])} for agents:{np.array([agent.num for agent in self.agent_subset])}")
-        #print(f"total amount for this batch:{total_amount}")
-        #print(f"resources in subset:{np.array([self.max_nodes[agent.num] for agent in self.agent_subset])} for agents:{np.array([agent.num for agent in self.agent_subset])}")
         return np.array([self.max_nodes[agent.num] for agent in self.agent_subset])
     def neib_resource_subtraction(self, agent_num):
         index_list = []
         if self.max_nodes[agent_num] > 0:
             self.max_nodes[agent_num] -= 1
-            #print(f"resources in subset:{np.array([self.max_nodes[agent.num] for agent in self.agent_subset])} for agents:{np.array([agent.num for agent in self.agent_subset])}")
-        #    print(f"left in agent:{self.max_nodes[agent_num]} | left in bank: {self.max_nodes[-1]}")
             return True
         return False
     def return_resources(self):
         total_amount = 0
-        #print(
-            #f"Returning: resources in subset:{np.array([self.max_nodes[agent.num] for agent in self.agent_subset])} for agents:{np.array([agent.num for agent in self.agent_subset])}")
         for agent in self.agent_subset:
             self.neib_budget += self.max_nodes[agent.num]
         for agent in self.agent_subset:
@@ -791,10 +576,7 @@ class neib_agents_evenly_split(neib_agents_distribution):
             self.max_nodes[agent.num] = 0
         self.max_nodes[-1] += self.neib_budget
         returning_resources = self.neib_budget
-        #print(f"resources returned:{self.neib_budget}")
         self.neib_budget =0
-        #if self.max_nodes[-1] < len(self.agent_subset):
-        #print(f"remain:{self.max_nodes[-1]}")
         return returning_resources
 
 class neib_agents_portion(neib_agents_distribution):
@@ -810,20 +592,15 @@ class neib_agents_portion(neib_agents_distribution):
         self.neib_budget -= total_sum
         if total_sum <= 0:
             self.neib_budget = 0
-        #print(f"total amount for this batch:{total_amount}")
-        #print(f"resources in subset:{np.array([self.max_nodes[agent.num] for agent in neib_agents])} for agents:{np.array([agent.num for agent in neib_agents])}")
         return np.array([self.max_nodes[agent.num] for agent in self.agents_subset])
     def neib_resource_subtraction(self, agent_num):
         index_list = []
         if self.max_nodes[agent_num] > 0:
             self.max_nodes[agent_num] -= 1
-            #print(f"resources in subset:{np.array([self.max_nodes[agent.num] for agent in self.agent_subset])} for agents:{np.array([agent.num for agent in self.agent_subset])}")
             return True
         return False
     def return_resources(self):
         total_amount = 0
-        #print(
-        #    f"Returning: resources in subset:{np.array([self.max_nodes[agent.num] for agent in self.agent_subset])} for agents:{np.array([agent.num for agent in self.agent_subset])}")
         for agent in self.agent_subset:
             total_amount += self.max_nodes[agent.num]
             if self.neib_budget_name != "neighbourhood-proportions":
@@ -834,7 +611,6 @@ class neib_agents_portion(neib_agents_distribution):
         for agent in self.agent_subset:
             self.max_nodes[agent.num] = 0
         self.max_nodes[-1] += total_amount
-        #print(f"remain:{self.max_nodes[-1]}")
         return self.max_nodes[-1]
 
 class neib_pid(neib_resources):
@@ -849,18 +625,10 @@ class neib_pid(neib_resources):
             agent.visited_count += 1
             agent_budget = self.calculate_budget_pid(agent, kp, kd, ki, prefix, cp_graph)
             budget_sum += agent_budget
-            #print(f"agent's {agent.num} budget: {agent_budget}")
         if self.max_nodes[-1] < budget_sum:
             budget_sum = self.max_nodes[-1]
         self.neib_budget = int(budget_sum)
         self.max_nodes[-1] -= self.neib_budget
-        # if self.neib_budget < len(self.agent_subset):
-        #     self.neib_budget = 0
-        # print(f"total amount for this batch:{budget_sum}")
-        # print(f"resources in subset:{ self.neib_budget} | budget_sum:{budget_sum} for agents:{np.array([agent.num for agent in neib_agents])}")
-        # print(
-        #     f"integral in subset:{np.array([agent.visited_count for agent in neib_agents])}")
-        #print(f"left in bank:{self.max_nodes[-1]}")
         return self.neib_budget
 
     def calculate_budget_pid(self, agent, kp, kd, ki, prefix, cp_graph: Dict[str, List[AgentAlg]]):
@@ -870,14 +638,8 @@ class neib_pid(neib_resources):
         integral = agent.visited_count
         if differential < 0:
             differential = 0
-        # if proportional > 0 :
-        #     agent_budget = kp * prefix / proportional + kd * prefix * differential + ki * prefix * integral
-        # else:
-        #     agent_budget = kd * differential + ki * integral
 
         agent_budget = kp * prefix / (proportional+1) + kd * prefix * differential + ki * prefix * integral
-        # agent_budget = kp * prefix * proportional + kd * prefix * differential + ki * prefix * integral
-        # print(f'P:{proportional} | D:{differential} | I:{integral} | B:{agent_budget}')
         return agent_budget
 
 class neib_pid_distance(neib_resources):
@@ -892,40 +654,19 @@ class neib_pid_distance(neib_resources):
             agent.visited_count += 1
             agent_budget = self.calculate_budget_pid_delays(agent, kp, kd, ki, prefix)
             budget_sum += agent_budget
-            # print(f"agent's {agent.num} budget: {agent_budget}")
         if self.max_nodes[-1] < budget_sum:
             budget_sum = self.max_nodes[-1]
         if budget_sum < 0:
             budget_sum = 0
         self.neib_budget = int(budget_sum)
-        #print(f"neib_budget: {self.neib_budget}")
         self.max_nodes[-1] -= self.neib_budget
-        # if self.neib_budget < len(self.agent_subset):
-        #     self.neib_budget = 0
-        # print(f"total amount for this batch:{total_amount}")
-        # print(
-        #     f"visited counts in subset:{np.array([agent.visited_count for agent in neib_agents])}")
-        # print(f"resources in subset:{ self.neib_budget} | budget_sum:{budget_sum} for agents:{np.array([agent.num for agent in neib_agents])}")
-        # print(f"left in bank:{self.max_nodes[-1]}")
         return self.neib_budget
 
     def calculate_budget_pid_delays(self, agent, kp, kd, ki, prefix):
-        #manhattan_dist = abs(agent.goal_node.x - agent.curr_node.x) + abs(agent.goal_node.y - agent.curr_node.y)
-        # proportional = agent.current_path_length - manhattan_dist
         proportional = self.agent_distances[agent.num]['normalized']
         differential = abs(agent.current_path_length - self.agent_distances[agent.num]['raw'])
-        #differential = self.agent_distances[agent.num]['raw'] - agent.current_path_length
-        #print(f"differential: {differential}")
         integral = agent.visited_count
-        # if differential < 0:
-        #     differential = 0
-        # if proportional > 0 :
-        #     agent_budget = kp * prefix / proportional + kd * prefix * differential + ki * prefix * integral
-        # else:
-        #     agent_budget = kd * differential + ki * integral
         agent_budget = kp * prefix * proportional + kd * prefix * differential + ki * prefix * integral
-        #print(f"P:{kp * prefix * proportional} | D:{kd * prefix * differential} | I:{ki * prefix * integral}")
-        #agent.starting_conflicts = agent.current_path_length
         return agent_budget
 
 class neib_pid_pie(neib_resources):
@@ -940,51 +681,28 @@ class neib_pid_pie(neib_resources):
             agent.visited_count += 1
             agent_budget = self.calculate_budget_pid_pie(agent, kp, kd, ki, prefix)
             budget_sum += agent_budget
-            #print(f"agent's {agent.num} budget: {agent_budget}")
         if self.max_nodes[-1] < budget_sum:
             budget_sum = self.max_nodes[-1]
         if budget_sum < 0:
             budget_sum = 0
         self.neib_budget = int(budget_sum)
         self.max_nodes[-1] -= self.neib_budget
-        # if self.neib_budget < len(self.agent_subset):
-        #     self.neib_budget = 0
-        # print(f"total amount for this batch:{total_amount}")
-        # print(
-        #     f"visited counts in subset:{np.array([agent.visited_count for agent in neib_agents])}")
-        #print(f"resources in subset:{ self.neib_budget} | budget_sum:{budget_sum} for agents:{np.array([agent.num for agent in neib_agents])}")
-        #print(f"left in bank:{self.max_nodes[-1]}")
         return self.neib_budget
 
     def calculate_budget_pid_pie(self, agent, kp, kd, ki, prefix):
         manhattan_dist = abs(agent.goal_node.x - agent.curr_node.x) + abs(agent.goal_node.y - agent.curr_node.y)
         proportional = agent.current_path_length - manhattan_dist
         differential = agent.starting_conflicts - agent.current_path_length
-        # if agent.num == 18:
-        #     print(f"differential: {differential}")
         integral = agent.visited_count
         if differential < 0:
             differential = 0
-        # if proportional > 0 :
-        #     agent_budget = kp * prefix / proportional + kd * prefix * differential + ki * prefix * integral
-        # else:
-        #     agent_budget = kd * differential + ki * integral
         agent_budget = kp * prefix * proportional + kd * prefix * differential + ki * prefix * integral
         agent.starting_conflicts = agent.current_path_length
         return agent_budget
 
-    # def calculate_delay(self, agent):
-    #     path_length = len(agent.path)
-    #     current_pos = agent.curr_node
-    #     goal_pos = agent.goal_node
-    #     manhattan_dist = abs(goal_pos.x - current_pos.x) + abs(goal_pos.y - current_pos.y)
-    #     delay = path_length - manhattan_dist
-    #     return delay
 
 class resource_and_neib_distributions:
     @staticmethod
     def create(distribution_class, neighbor_class=None, neighbor_agents_class=None, resources_per_agent=0, num_agents=0):
-        #mixins = tuple([neighbor_class] if neighbor_class else [])
-        #DynamicClass = create_resource_class(distribution_class, *mixins)
         DynamicClass = create_resource_class(distribution_class, neighbor_class, neighbor_agents_class)
         return DynamicClass(resources_per_agent=resources_per_agent, num_agents=num_agents)
